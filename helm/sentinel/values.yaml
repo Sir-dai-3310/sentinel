@@ -1,6 +1,8 @@
 # Default values for sentinel.
 
-replicaCount: 2
+replicaCount:
+  api: 2
+  web: 2
 
 image:
   api:
@@ -18,8 +20,8 @@ fullnameOverride: ""
 
 serviceAccount:
   create: true
-  name: ""
   annotations: {}
+  name: ""
 
 service:
   api:
@@ -29,37 +31,12 @@ service:
     type: ClusterIP
     port: 80
 
-# External PostgreSQL (managed outside this chart). Credentials come from an
-# existing Kubernetes Secret — never put plaintext passwords in values.
-postgresql:
-  host: "postgres.example.svc.cluster.local"
-  port: 5432
-  database: sentinel
-  user: sentinel
-  existingSecret: "sentinel-postgres"
-  # Key inside the secret holding the password
-  secretKeys:
-    password: "password"
-
-redis:
-  host: "redis.example.svc.cluster.local"
-  port: 6379
-  existingSecret: "sentinel-redis"
-  secretKeys:
-    password: "password"
-
-# Non-secret application configuration (rendered into a ConfigMap)
-config:
-  corsOrigins: "http://localhost:3000"
-  agentsGrpcUrl: "sentinel-agents:50052"
-  rustLog: "info"
-
-# Placeholder app secrets rendered from values only when create=true.
-# Prefer existingSecret for real deployments.
-secrets:
-  create: false
-  # Keys must be provided via --set-file or an external secret manager.
-  data: {}
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+  host: sentinel.local
+  tls: []
 
 resources:
   api:
@@ -80,28 +57,44 @@ resources:
 autoscaling:
   enabled: false
   minReplicas: 2
-  maxReplicas: 6
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 80
 
-ingress:
-  enabled: false
-  className: nginx
-  annotations: {}
-  host: sentinel.example.com
-  tls: []
+# --- External dependencies (PostgreSQL / Redis) ---
+# 默认指向集群外部/独立部署的服务；凭据一律通过 existingSecret 引用，
+# 本文件不包含任何明文密码。
+postgres:
+  host: postgres.example.internal
+  port: 5432
+  database: sentinel
+  user: sentinel
 
-web:
-  enabled: true
-  replicaCount: 2
+redis:
+  host: redis.example.internal
+  port: 6379
+
+secrets:
+  # 推荐：提前创建好包含以下 key 的 Secret，并把名字填到这里。
+  #   DATABASE_URL  例如 postgresql://<user>:<password>@<host>:5432/<db>
+  #   REDIS_URL     例如 redis://:<password>@<host>:6379/0
+  existingSecret: ""
+  # 占位模式：existingSecret 为空时，chart 会用下面的值渲染一个占位 Secret。
+  # 默认留空，部署前必须通过 --set 或外部秘管系统注入，切勿提交真实口令。
+  databaseUrl: ""
+  redisUrl: ""
+
+# 非敏感环境变量（映射到 ConfigMap）
+env:
+  CORS_ORIGINS: "http://localhost:3000"
+  AGENTS_GRPC_URL: "agents:50052"
+  RUST_LOG: "info"
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
 
 metrics:
   serviceMonitor:
     enabled: false
     interval: 30s
     path: /metrics
-
-podAnnotations: {}
-podSecurityContext: {}
-nodeSelector: {}
-tolerations: []
-affinity: {}
