@@ -17,14 +17,19 @@
     "dataRefresh": "Data Refresh",
     "connected": "Connected",
     "disconnected": "Disconnected",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "loadError": "Failed to load statistics. Please check API connection.",
+    "every5s": "Every 5 seconds"
   },
   "analysis": {
     "title": "Log Analysis",
     "subtitle": "Upload a security log for AI-powered analysis",
     "dropzone": "Drop your log file here",
+    "supportsJson": "Supports .json format",
     "browseFiles": "Browse Files",
     "analyzing": "Analyzing...",
+    "started": "Analysis started...",
+    "stage": "Stage: {{stage}} - {{status}}",
     "result": "Analysis Result",
     "malicious": "Malicious",
     "benign": "Benign",
@@ -36,7 +41,10 @@
     "recommendedActions": "Recommended Actions",
     "connected": "Connected to analysis service",
     "disconnected": "Disconnected",
-    "error": "Analysis Error"
+    "error": "Analysis Error",
+    "wsError": "WebSocket connection error",
+    "wsNotConnected": "WebSocket not connected",
+    "parseError": "Failed to analyze log"
   },
   "rules": {
     "title": "Sigma Rules",
@@ -46,17 +54,26 @@
     "loading": "Loading rules...",
     "error": "Failed to load rules",
     "noRules": "No rules found",
-    "confirmDelete": "Delete rule {{id}}?"
+    "confirmDelete": "Delete rule {{id}}?",
+    "createTitle": "Create New Rule",
+    "createPlaceholder": "Rule creation UI coming soon. For now, add rules manually to the rules/ directory.",
+    "close": "Close"
   },
   "settings": {
     "title": "Settings",
     "subtitle": "Configure Sentinel",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
     "llmConfig": "LLM Configuration",
     "model": "Model",
     "baseUrl": "Base URL",
     "temperature": "Temperature",
     "maxTokens": "Max Tokens",
     "threatIntel": "Threat Intelligence",
+    "threatIntelHint": "API keys are configured via environment variables and require service restart to change.",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "systemConfig": "System Configuration",
@@ -65,9 +82,49 @@
     "rulesDir": "Rules Directory",
     "logLevel": "Log Level",
     "securityNote": "Security Note",
-    "securityNoteText": "API keys and sensitive configuration are managed via environment variables only.",
+    "securityNoteText": "API keys and sensitive configuration are managed via environment variables only. They are never exposed through this interface or stored in the database.",
     "loading": "Loading settings...",
-    "error": "Failed to load settings"
+    "error": "Failed to load settings",
+    "errorHint": "Please check API connection and authentication."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "browserNotifications": "Browser Notifications",
+    "browserNotificationsDesc": "Receive desktop alerts for high-danger analysis results",
+    "notSupported": "This browser does not support notifications.",
+    "permissionDenied": "Notification permission denied. Please enable it in browser settings.",
+    "webhookUrl": "Webhook URL",
+    "webhookPlaceholder": "https://hooks.slack.com/... or email gateway",
+    "webhookHint": "Slack / email gateway placeholder — alerts are POSTed to this URL.",
+    "dangerThreshold": "Danger Level Threshold",
+    "thresholdHint": "Only notify when the danger level meets or exceeds this value."
+  },
+  "dashboardConfig": {
+    "title": "Dashboard Configuration",
+    "description": "Show or hide dashboard cards and adjust their order.",
+    "stats": "Statistics Cards",
+    "attackHeatmap": "ATT&CK Heatmap",
+    "threatTrend": "Threat Trend",
+    "ruleHits": "Rule Hits Distribution",
+    "llmCost": "LLM Cost",
+    "systemStatus": "System Status"
+  },
+  "charts": {
+    "attackHeatmap": "ATT&CK Tactics Heatmap",
+    "threatTrend": "Threat Trend",
+    "ruleHits": "Top Rule Hits",
+    "hits": "Hits",
+    "noData": "No data available"
+  },
+  "llmCost": {
+    "title": "LLM Cost",
+    "loading": "Loading...",
+    "notEnabled": "Backend cost tracking not enabled",
+    "unavailable": "Cost data unavailable",
+    "totalCost": "Total Cost (USD)",
+    "totalTokens": "Total Tokens",
+    "byModel": "By Model",
+    "tokens": "tokens"
   },
   "common": {
     "language": "Language",

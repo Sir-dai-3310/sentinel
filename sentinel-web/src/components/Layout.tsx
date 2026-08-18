@@ -20,15 +20,15 @@ export default function Layout({ children }: LayoutProps) {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Shield className="w-8 h-8 text-primary-500" />
               <h1 className="text-2xl font-bold">Sentinel</h1>
-              <span className="text-sm text-gray-400">AI Security Platform</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">AI Security Platform</span>
             </div>
             <div className="flex items-center space-x-4">
               <nav className="flex space-x-1">
@@ -42,7 +42,7 @@ export default function Layout({ children }: LayoutProps) {
                       className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
                         isActive
                           ? 'bg-primary-600 text-white'
-                          : 'text-gray-300 hover:bg-gray-700'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -61,8 +61,8 @@ export default function Layout({ children }: LayoutProps) {
       <main className="container mx-auto px-4 py-8">{children}</main>
 
       {/* Footer */}
-      <footer className="bg-gray-800 border-t border-gray-700 mt-auto">
-        <div className="container mx-auto px-4 py-6 text-center text-gray-400 text-sm">
+      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto">
+        <div className="container mx-auto px-4 py-6 text-center text-gray-500 dark:text-gray-400 text-sm">
           <p>Sentinel v1.0 - Open Source AI Security Platform</p>
         </div>
       </footer>

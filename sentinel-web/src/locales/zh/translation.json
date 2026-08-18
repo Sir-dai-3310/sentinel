@@ -17,14 +17,19 @@
     "dataRefresh": "数据刷新",
     "connected": "已连接",
     "disconnected": "已断开",
-    "loading": "加载中..."
+    "loading": "加载中...",
+    "loadError": "加载统计数据失败，请检查 API 连接。",
+    "every5s": "每 5 秒"
   },
   "analysis": {
     "title": "日志分析",
     "subtitle": "上传安全日志进行 AI 智能分析",
     "dropzone": "拖拽日志文件到这里",
+    "supportsJson": "支持 .json 格式",
     "browseFiles": "浏览文件",
     "analyzing": "分析中...",
+    "started": "分析已开始...",
+    "stage": "阶段：{{stage}} - {{status}}",
     "result": "分析结果",
     "malicious": "恶意",
     "benign": "正常",
@@ -36,7 +41,10 @@
     "recommendedActions": "建议操作",
     "connected": "已连接到分析服务",
     "disconnected": "已断开",
-    "error": "分析错误"
+    "error": "分析错误",
+    "wsError": "WebSocket 连接错误",
+    "wsNotConnected": "WebSocket 未连接",
+    "parseError": "日志分析失败"
   },
   "rules": {
     "title": "Sigma 规则",
@@ -46,17 +54,26 @@
     "loading": "加载规则中...",
     "error": "加载规则失败",
     "noRules": "未找到规则",
-    "confirmDelete": "确认删除规则 {{id}}?"
+    "confirmDelete": "确认删除规则 {{id}}?",
+    "createTitle": "新建规则",
+    "createPlaceholder": "规则创建界面即将上线。目前请手动将规则添加到 rules/ 目录。",
+    "close": "关闭"
   },
   "settings": {
     "title": "系统设置",
     "subtitle": "配置 Sentinel",
+    "appearance": "外观",
+    "theme": "主题",
+    "themeLight": "亮色",
+    "themeDark": "暗色",
+    "themeSystem": "跟随系统",
     "llmConfig": "LLM 配置",
     "model": "模型",
     "baseUrl": "基础 URL",
     "temperature": "温度",
     "maxTokens": "最大 Token 数",
     "threatIntel": "威胁情报",
+    "threatIntelHint": "API 密钥通过环境变量配置，修改后需要重启服务才能生效。",
     "enabled": "已启用",
     "disabled": "未启用",
     "systemConfig": "系统配置",
@@ -65,9 +82,49 @@
     "rulesDir": "规则目录",
     "logLevel": "日志级别",
     "securityNote": "安全提示",
-    "securityNoteText": "API 密钥和敏感配置仅通过环境变量管理。",
+    "securityNoteText": "API 密钥和敏感配置仅通过环境变量管理，不会通过此界面暴露或存入数据库。",
     "loading": "加载设置中...",
-    "error": "加载设置失败"
+    "error": "加载设置失败",
+    "errorHint": "请检查 API 连接和认证状态。"
+  },
+  "notifications": {
+    "title": "通知",
+    "browserNotifications": "浏览器通知",
+    "browserNotificationsDesc": "对高危险等级的分析结果接收桌面提醒",
+    "notSupported": "当前浏览器不支持通知功能。",
+    "permissionDenied": "通知权限被拒绝，请在浏览器设置中开启。",
+    "webhookUrl": "Webhook 地址",
+    "webhookPlaceholder": "https://hooks.slack.com/... 或邮件网关",
+    "webhookHint": "Slack / 邮件网关占位——告警将以 POST 发送到该地址。",
+    "dangerThreshold": "危险等级阈值",
+    "thresholdHint": "仅当危险等级达到或超过该值时才发送通知。"
+  },
+  "dashboardConfig": {
+    "title": "仪表盘配置",
+    "description": "显示或隐藏仪表盘卡片，并调整其顺序。",
+    "stats": "统计卡片",
+    "attackHeatmap": "ATT&CK 热力图",
+    "threatTrend": "威胁趋势",
+    "ruleHits": "规则命中分布",
+    "llmCost": "LLM 成本",
+    "systemStatus": "系统状态"
+  },
+  "charts": {
+    "attackHeatmap": "ATT&CK 战术热力图",
+    "threatTrend": "威胁趋势",
+    "ruleHits": "规则命中 Top 榜",
+    "hits": "命中",
+    "noData": "暂无数据"
+  },
+  "llmCost": {
+    "title": "LLM 成本",
+    "loading": "加载中...",
+    "notEnabled": "后端未启用成本统计",
+    "unavailable": "成本数据暂不可用",
+    "totalCost": "总成本（美元）",
+    "totalTokens": "总 Token 数",
+    "byModel": "按模型统计",
+    "tokens": "Token"
   },
   "common": {
     "language": "语言",

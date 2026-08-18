@@ -17,14 +17,19 @@
     "dataRefresh": "Actualización de Datos",
     "connected": "Conectado",
     "disconnected": "Desconectado",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "loadError": "Error al cargar estadísticas. Verifique la conexión API.",
+    "every5s": "Cada 5 segundos"
   },
   "analysis": {
     "title": "Análisis de Registros",
     "subtitle": "Análisis de seguridad con IA",
     "dropzone": "Suelta tu archivo de registro aquí",
+    "supportsJson": "Admite formato .json",
     "browseFiles": "Explorar Archivos",
     "analyzing": "Analizando...",
+    "started": "Análisis iniciado...",
+    "stage": "Etapa: {{stage}} - {{status}}",
     "result": "Resultado del Análisis",
     "malicious": "Malicioso",
     "benign": "Benigno",
@@ -36,7 +41,10 @@
     "recommendedActions": "Acciones Recomendadas",
     "connected": "Conectado al servicio de análisis",
     "disconnected": "Desconectado",
-    "error": "Error de Análisis"
+    "error": "Error de Análisis",
+    "wsError": "Error de conexión WebSocket",
+    "wsNotConnected": "WebSocket no conectado",
+    "parseError": "Error al analizar el registro"
   },
   "rules": {
     "title": "Reglas Sigma",
@@ -46,17 +54,26 @@
     "loading": "Cargando reglas...",
     "error": "Error al cargar reglas",
     "noRules": "No se encontraron reglas",
-    "confirmDelete": "¿Eliminar regla {{id}}?"
+    "confirmDelete": "¿Eliminar regla {{id}}?",
+    "createTitle": "Crear Nueva Regla",
+    "createPlaceholder": "La interfaz de creación de reglas estará disponible pronto. Por ahora, agregue reglas manualmente al directorio rules/.",
+    "close": "Cerrar"
   },
   "settings": {
     "title": "Configuración",
     "subtitle": "Configurar Sentinel",
+    "appearance": "Apariencia",
+    "theme": "Tema",
+    "themeLight": "Claro",
+    "themeDark": "Oscuro",
+    "themeSystem": "Sistema",
     "llmConfig": "Configuración LLM",
     "model": "Modelo",
     "baseUrl": "URL Base",
     "temperature": "Temperatura",
     "maxTokens": "Máx. Tokens",
     "threatIntel": "Inteligencia de Amenazas",
+    "threatIntelHint": "Las claves API se configuran mediante variables de entorno y requieren reiniciar el servicio para cambiar.",
     "enabled": "Habilitado",
     "disabled": "Deshabilitado",
     "systemConfig": "Configuración del Sistema",
@@ -65,9 +82,49 @@
     "rulesDir": "Directorio de Reglas",
     "logLevel": "Nivel de Log",
     "securityNote": "Nota de Seguridad",
-    "securityNoteText": "Las claves API y la configuración sensible solo se gestionan mediante variables de entorno.",
+    "securityNoteText": "Las claves API y la configuración sensible solo se gestionan mediante variables de entorno. Nunca se exponen a través de esta interfaz ni se almacenan en la base de datos.",
     "loading": "Cargando configuración...",
-    "error": "Error al cargar configuración"
+    "error": "Error al cargar configuración",
+    "errorHint": "Verifique la conexión API y la autenticación."
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "browserNotifications": "Notificaciones del Navegador",
+    "browserNotificationsDesc": "Recibir alertas de escritorio para resultados de alto peligro",
+    "notSupported": "Este navegador no admite notificaciones.",
+    "permissionDenied": "Permiso de notificación denegado. Habilítelo en la configuración del navegador.",
+    "webhookUrl": "URL del Webhook",
+    "webhookPlaceholder": "https://hooks.slack.com/... o puerta de enlace de correo",
+    "webhookHint": "Marcador para Slack / puerta de correo — las alertas se envían por POST a esta URL.",
+    "dangerThreshold": "Umbral de Nivel de Peligro",
+    "thresholdHint": "Notificar solo cuando el nivel de peligro alcance o supere este valor."
+  },
+  "dashboardConfig": {
+    "title": "Configuración del Panel",
+    "description": "Mostrar u ocultar tarjetas del panel y ajustar su orden.",
+    "stats": "Tarjetas de Estadísticas",
+    "attackHeatmap": "Mapa de Calor ATT&CK",
+    "threatTrend": "Tendencia de Amenazas",
+    "ruleHits": "Distribución de Reglas",
+    "llmCost": "Costo LLM",
+    "systemStatus": "Estado del Sistema"
+  },
+  "charts": {
+    "attackHeatmap": "Mapa de Calor de Tácticas ATT&CK",
+    "threatTrend": "Tendencia de Amenazas",
+    "ruleHits": "Principales Reglas Activadas",
+    "hits": "Activaciones",
+    "noData": "Sin datos disponibles"
+  },
+  "llmCost": {
+    "title": "Costo LLM",
+    "loading": "Cargando...",
+    "notEnabled": "Seguimiento de costos no habilitado en el backend",
+    "unavailable": "Datos de costo no disponibles",
+    "totalCost": "Costo Total (USD)",
+    "totalTokens": "Tokens Totales",
+    "byModel": "Por Modelo",
+    "tokens": "tokens"
   },
   "common": {
     "language": "Idioma",

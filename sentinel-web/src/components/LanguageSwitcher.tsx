@@ -19,7 +19,7 @@ export default function LanguageSwitcher() {
         aria-label="Language"
         value={i18n.language}
         onChange={(e) => i18n.changeLanguage(e.target.value)}
-        className="bg-gray-700 text-gray-200 text-sm rounded px-2 py-1 border border-gray-600 focus:outline-none focus:border-primary-500"
+        className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm rounded px-2 py-1 border border-gray-300 dark:border-gray-600 focus:outline-none focus:border-primary-500"
       >
         {LANGUAGES.map((lang) => (
           <option key={lang.code} value={lang.code}>

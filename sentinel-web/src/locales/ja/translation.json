@@ -17,14 +17,19 @@
     "dataRefresh": "データ更新",
     "connected": "接続済み",
     "disconnected": "切断",
-    "loading": "読み込み中..."
+    "loading": "読み込み中...",
+    "loadError": "統計の読み込みに失敗しました。API接続を確認してください。",
+    "every5s": "5秒ごと"
   },
   "analysis": {
     "title": "ログ分析",
     "subtitle": "セキュリティログをAIで分析",
     "dropzone": "ログファイルをここにドロップ",
+    "supportsJson": ".json 形式に対応",
     "browseFiles": "ファイルを参照",
     "analyzing": "分析中...",
+    "started": "分析を開始しました...",
+    "stage": "ステージ: {{stage}} - {{status}}",
     "result": "分析結果",
     "malicious": "悪意あり",
     "benign": "正常",
@@ -36,7 +41,10 @@
     "recommendedActions": "推奨アクション",
     "connected": "分析サービスに接続済み",
     "disconnected": "切断",
-    "error": "分析エラー"
+    "error": "分析エラー",
+    "wsError": "WebSocket 接続エラー",
+    "wsNotConnected": "WebSocket が接続されていません",
+    "parseError": "ログの分析に失敗しました"
   },
   "rules": {
     "title": "Sigma ルール",
@@ -46,17 +54,26 @@
     "loading": "ルール読み込み中...",
     "error": "ルールの読み込みに失敗",
     "noRules": "ルールが見つかりません",
-    "confirmDelete": "ルール {{id}} を削除しますか？"
+    "confirmDelete": "ルール {{id}} を削除しますか？",
+    "createTitle": "新規ルール作成",
+    "createPlaceholder": "ルール作成UIは近日公開予定です。現在は rules/ ディレクトリに手動で追加してください。",
+    "close": "閉じる"
   },
   "settings": {
     "title": "設定",
     "subtitle": "Sentinel の設定",
+    "appearance": "外観",
+    "theme": "テーマ",
+    "themeLight": "ライト",
+    "themeDark": "ダーク",
+    "themeSystem": "システム",
     "llmConfig": "LLM 設定",
     "model": "モデル",
     "baseUrl": "ベースURL",
     "temperature": "温度",
     "maxTokens": "最大トークン数",
     "threatIntel": "脅威インテリジェンス",
+    "threatIntelHint": "APIキーは環境変数で設定され、変更にはサービスの再起動が必要です。",
     "enabled": "有効",
     "disabled": "無効",
     "systemConfig": "システム設定",
@@ -65,9 +82,49 @@
     "rulesDir": "ルールディレクトリ",
     "logLevel": "ログレベル",
     "securityNote": "セキュリティノート",
-    "securityNoteText": "APIキーと機密設定は環境変数でのみ管理されます。",
+    "securityNoteText": "APIキーと機密設定は環境変数でのみ管理されます。このインターフェースで公開されたり、データベースに保存されることはありません。",
     "loading": "設定読み込み中...",
-    "error": "設定の読み込みに失敗"
+    "error": "設定の読み込みに失敗",
+    "errorHint": "API接続と認証を確認してください。"
+  },
+  "notifications": {
+    "title": "通知",
+    "browserNotifications": "ブラウザ通知",
+    "browserNotificationsDesc": "高危険度の分析結果をデスクトップ通知で受け取る",
+    "notSupported": "このブラウザは通知に対応していません。",
+    "permissionDenied": "通知の権限が拒否されました。ブラウザの設定で有効にしてください。",
+    "webhookUrl": "Webhook URL",
+    "webhookPlaceholder": "https://hooks.slack.com/... またはメールゲートウェイ",
+    "webhookHint": "Slack / メールゲートウェイ用プレースホルダー — アラートはこのURLにPOSTされます。",
+    "dangerThreshold": "危険レベルしきい値",
+    "thresholdHint": "危険レベルがこの値以上の場合のみ通知します。"
+  },
+  "dashboardConfig": {
+    "title": "ダッシュボード設定",
+    "description": "ダッシュボードカードの表示/非表示と順序を調整します。",
+    "stats": "統計カード",
+    "attackHeatmap": "ATT&CK ヒートマップ",
+    "threatTrend": "脅威トレンド",
+    "ruleHits": "ルールヒット分布",
+    "llmCost": "LLM コスト",
+    "systemStatus": "システムステータス"
+  },
+  "charts": {
+    "attackHeatmap": "ATT&CK 戦術ヒートマップ",
+    "threatTrend": "脅威トレンド",
+    "ruleHits": "ルールヒット Top",
+    "hits": "ヒット",
+    "noData": "データがありません"
+  },
+  "llmCost": {
+    "title": "LLM コスト",
+    "loading": "読み込み中...",
+    "notEnabled": "バックエンドでコスト追跡が有効になっていません",
+    "unavailable": "コストデータを利用できません",
+    "totalCost": "総コスト (USD)",
+    "totalTokens": "総トークン数",
+    "byModel": "モデル別",
+    "tokens": "トークン"
   },
   "common": {
     "language": "言語",

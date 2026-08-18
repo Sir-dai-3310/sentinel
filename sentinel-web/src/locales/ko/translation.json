@@ -17,14 +17,19 @@
     "dataRefresh": "데이터 새로고침",
     "connected": "연결됨",
     "disconnected": "연결 끊김",
-    "loading": "로딩 중..."
+    "loading": "로딩 중...",
+    "loadError": "통계를 불러오지 못했습니다. API 연결을 확인하세요.",
+    "every5s": "5초마다"
   },
   "analysis": {
     "title": "로그 분석",
     "subtitle": "AI 기반 보안 로그 분석",
     "dropzone": "로그 파일을 여기에 드롭",
+    "supportsJson": ".json 형식 지원",
     "browseFiles": "파일 찾기",
     "analyzing": "분석 중...",
+    "started": "분석이 시작되었습니다...",
+    "stage": "단계: {{stage}} - {{status}}",
     "result": "분석 결과",
     "malicious": "악성",
     "benign": "정상",
@@ -36,7 +41,10 @@
     "recommendedActions": "권장 조치",
     "connected": "분석 서비스에 연결됨",
     "disconnected": "연결 끊김",
-    "error": "분석 오류"
+    "error": "분석 오류",
+    "wsError": "WebSocket 연결 오류",
+    "wsNotConnected": "WebSocket이 연결되지 않았습니다",
+    "parseError": "로그 분석에 실패했습니다"
   },
   "rules": {
     "title": "Sigma 규칙",
@@ -46,28 +54,77 @@
     "loading": "규칙 로딩 중...",
     "error": "규칙 로딩 실패",
     "noRules": "규칙을 찾을 수 없음",
-    "confirmDelete": "규칙 {{id}}를 삭제하시겠습니까?"
+    "confirmDelete": "규칙 {{id}}를 삭제하시겠습니까?",
+    "createTitle": "새 규칙 만들기",
+    "createPlaceholder": "규칙 생성 UI는 곧 제공될 예정입니다. 현재는 rules/ 디렉터리에 수동으로 추가하세요.",
+    "close": "닫기"
   },
   "settings": {
     "title": "설정",
     "subtitle": "Sentinel 구성",
+    "appearance": "모양",
+    "theme": "테마",
+    "themeLight": "라이트",
+    "themeDark": "다크",
+    "themeSystem": "시스템",
     "llmConfig": "LLM 구성",
     "model": "모델",
     "baseUrl": "기본 URL",
     "temperature": "온도",
     "maxTokens": "최대 토큰",
     "threatIntel": "위협 인텔리전스",
+    "threatIntelHint": "API 키는 환경 변수로 구성되며 변경하려면 서비스 재시작이 필요합니다.",
     "enabled": "활성화",
     "disabled": "비활성화",
     "systemConfig": "시스템 구성",
     "environment": "환경",
     "corsOrigins": "CORS 오리진",
-    "rulesDir": "규칙 디렉토리",
+    "rulesDir": "규칙 디렉터리",
     "logLevel": "로그 수준",
     "securityNote": "보안 참고",
-    "securityNoteText": "API 키와 민감한 설정은 환경 변수로만 관리됩니다.",
+    "securityNoteText": "API 키와 민감한 설정은 환경 변수로만 관리됩니다. 이 인터페이스를 통해 노출되거나 데이터베이스에 저장되지 않습니다.",
     "loading": "설정 로딩 중...",
-    "error": "설정 로딩 실패"
+    "error": "설정 로딩 실패",
+    "errorHint": "API 연결 및 인증을 확인하세요."
+  },
+  "notifications": {
+    "title": "알림",
+    "browserNotifications": "브라우저 알림",
+    "browserNotificationsDesc": "위험도가 높은 분석 결과를 데스크톱 알림으로 받기",
+    "notSupported": "이 브라우저는 알림을 지원하지 않습니다.",
+    "permissionDenied": "알림 권한이 거부되었습니다. 브라우저 설정에서 활성화하세요.",
+    "webhookUrl": "Webhook URL",
+    "webhookPlaceholder": "https://hooks.slack.com/... 또는 이메일 게이트웨이",
+    "webhookHint": "Slack / 이메일 게이트웨이 플레이스홀더 — 알림이 이 URL로 POST됩니다.",
+    "dangerThreshold": "위험 수준 임계값",
+    "thresholdHint": "위험 수준이 이 값 이상일 때만 알립니다."
+  },
+  "dashboardConfig": {
+    "title": "대시보드 구성",
+    "description": "대시보드 카드를 표시하거나 숨기고 순서를 조정합니다.",
+    "stats": "통계 카드",
+    "attackHeatmap": "ATT&CK 히트맵",
+    "threatTrend": "위협 추세",
+    "ruleHits": "규칙 적중 분포",
+    "llmCost": "LLM 비용",
+    "systemStatus": "시스템 상태"
+  },
+  "charts": {
+    "attackHeatmap": "ATT&CK 전술 히트맵",
+    "threatTrend": "위협 추세",
+    "ruleHits": "상위 규칙 적중",
+    "hits": "적중",
+    "noData": "데이터 없음"
+  },
+  "llmCost": {
+    "title": "LLM 비용",
+    "loading": "로딩 중...",
+    "notEnabled": "백엔드에서 비용 추적이 활성화되지 않았습니다",
+    "unavailable": "비용 데이터를 사용할 수 없습니다",
+    "totalCost": "총 비용 (USD)",
+    "totalTokens": "총 토큰 수",
+    "byModel": "모델별",
+    "tokens": "토큰"
   },
   "common": {
     "language": "언어",
