@@ -35,3 +35,16 @@ async def get_stats() -> Stats:
         critical=0,
         accuracy=0.0,
     )
+
+
+@router.get("/stats/llm-costs")
+async def get_llm_costs() -> dict[str, Any]:
+    """
+    Aggregated LLM usage and estimated cost from the cost tracker.
+
+    Returns call counts, token totals and per-model breakdowns. Data is
+    in-process (reset on restart) unless a persistent tracker is wired in.
+    """
+    from sentinel_agents.llm.cost_tracker import get_cost_tracker
+
+    return get_cost_tracker().get_summary()

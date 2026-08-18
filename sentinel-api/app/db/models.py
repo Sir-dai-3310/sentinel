@@ -139,6 +139,35 @@ class RuleMetadata(Base):
     )
 
 
+class ImportTask(Base):
+    """A bulk log-import job (JSONL/CSV upload processed in the background)."""
+
+    __tablename__ = "import_tasks"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    task_id = Column(String(64), unique=True, nullable=False)  # public uuid
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # status: pending -> processing -> completed / failed
+    status = Column(String(20), nullable=False, default="pending")
+    filename = Column(String(255), nullable=True)
+    format = Column(String(10), nullable=True)  # jsonl | csv
+
+    total = Column(Integer, default=0, nullable=False)
+    processed = Column(Integer, default=0, nullable=False)
+    failed = Column(Integer, default=0, nullable=False)
+    error = Column(Text, nullable=True)
+
+    tenant_id = Column(String(64), nullable=False, default="default", server_default="default")
+
+    __table_args__ = (
+        Index("idx_import_task_id", "task_id"),
+        Index("idx_import_status", "status"),
+        Index("idx_import_tenant_id", "tenant_id"),
+    )
+
+
 class SystemStats(Base):
     """Aggregated system statistics."""
 

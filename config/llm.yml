@@ -1,0 +1,39 @@
+# Per-task LLM configuration for Sentinel agents.
+#
+# Each agent task can use a different provider / model / generation params.
+# Any task omitted here falls back to the `default` block. The providers
+# factory (sentinel_agents.llm.providers) reads this via
+# `LLMProviderFactory.create_for_task(...)`.
+#
+# Path override: set SENTINEL_LLM_CONFIG to a custom file location.
+
+default:
+  provider: openai
+  model: gpt-4o-mini
+  temperature: 0.2
+  max_tokens: 1024
+  top_p: 1.0
+
+tasks:
+  triage:
+    provider: ollama
+    model: llama3
+    temperature: 0.1
+    max_tokens: 512
+  analyst:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.2
+    max_tokens: 2048
+    top_p: 0.9
+  hunter:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.3
+    max_tokens: 1024
+  reporter:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.4
+    max_tokens: 4096
+    top_p: 0.95

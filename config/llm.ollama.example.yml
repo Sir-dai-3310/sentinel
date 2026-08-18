@@ -1,0 +1,44 @@
+# Local Ollama configuration example — run Sentinel fully on local models.
+#
+# Prereqs:
+#   1. Install Ollama:  https://ollama.com/download
+#   2. Pull a model:    ollama pull llama3        (or qwen2.5, mistral, ...)
+#   3. Serve:           ollama serve              (default http://localhost:11434)
+#
+# Use it:
+#   export SENTINEL_LLM_CONFIG=config/llm.ollama.example.yml
+#   export OLLAMA_BASE_URL=http://localhost:11434   # if not default
+#
+# Local models cost nothing (see MODEL_PRICING: llama3 -> 0.0) and keep logs
+# on-prem — useful for sensitive environments. They are weaker than frontier
+# models, so consider a higher temperature headroom and validate verdict
+# quality on your own telemetry before production use.
+
+default:
+  provider: ollama
+  model: llama3
+  temperature: 0.2
+  max_tokens: 1024
+  top_p: 1.0
+
+tasks:
+  triage:
+    provider: ollama
+    model: llama3
+    temperature: 0.1
+    max_tokens: 512
+  analyst:
+    provider: ollama
+    model: llama3
+    temperature: 0.2
+    max_tokens: 2048
+  hunter:
+    provider: ollama
+    model: llama3
+    temperature: 0.3
+    max_tokens: 1024
+  reporter:
+    provider: ollama
+    model: llama3
+    temperature: 0.4
+    max_tokens: 4096

@@ -1,0 +1,39 @@
+# Sentinel log preprocessing pipeline configuration.
+#
+# Loaded by sentinel_agents.preprocessing when present (or pointed to by the
+# SENTINEL_PREPROCESSING_CONFIG env var). When this file is absent the pipeline
+# is a zero-overhead no-op.
+#
+# Stages run in order: field_mapping -> filters -> enrichment.
+
+# Rename / extract fields. Keys are the NEW field name, values are dotted
+# source paths in the raw log. Nested targets are created as needed.
+field_mapping:
+  event.id: EventID
+  process.image: Image
+  process.command_line: CommandLine
+  source.ip: SourceIp
+
+# Drop rules. A log is dropped (never analyzed) when it matches ALL key/value
+# pairs of ANY rule below.
+filters:
+  - EventID: 4688
+    Image: "C:\\Windows\\System32\\svchost.exe"   # noisy benign process creation
+  - LogSource: "healthcheck"                        # internal health checks
+
+# Enrichment.
+enrichment:
+  # Static geo lookup for source IPs.
+  geo:
+    ip_field: source.ip
+    out_field: geo
+    table:
+      "203.0.113.10": {country: "CN", city: "Beijing"}
+      "198.51.100.7": {country: "US", city: "Ashburn"}
+  # Threat-intel: static denylist (works with no credentials); a live hook can
+  # be wired in code and is skipped gracefully when no intel source is up.
+  threat_intel:
+    out_field: threat_intel
+    denylist:
+      - "203.0.113.10"
+      - "evil.example.com"

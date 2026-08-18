@@ -164,11 +164,27 @@ class IntelligenceAggregator:
     def __init__(self, providers: list[ThreatIntelProvider]):
         self.providers = providers
 
+    async def _lookup_with_retry(self, method, value: str) -> ThreatIntel | None:
+        """
+        Call a provider lookup with retry on transient (retryable) errors.
+
+        Providers that catch their own exceptions return None; a provider that
+        raises a retryable network error is retried with exponential backoff.
+        Persistent failure is tolerated (returns None) so intel never blocks
+        analysis.
+        """
+        from sentinel_agents.utils.retry import call_with_retry
+
+        try:
+            return await call_with_retry(method, value)
+        except Exception:
+            return None
+
     async def lookup_ip(self, ip: str) -> list[ThreatIntel]:
         """Lookup IP across all providers."""
         results = []
         for provider in self.providers:
-            result = await provider.lookup_ip(ip)
+            result = await self._lookup_with_retry(provider.lookup_ip, ip)
             if result:
                 results.append(result)
         return results
@@ -177,7 +193,7 @@ class IntelligenceAggregator:
         """Lookup hash across all providers."""
         results = []
         for provider in self.providers:
-            result = await provider.lookup_hash(file_hash)
+            result = await self._lookup_with_retry(provider.lookup_hash, file_hash)
             if result:
                 results.append(result)
         return results
@@ -186,7 +202,7 @@ class IntelligenceAggregator:
         """Lookup domain across all providers."""
         results = []
         for provider in self.providers:
-            result = await provider.lookup_domain(domain)
+            result = await self._lookup_with_retry(provider.lookup_domain, domain)
             if result:
                 results.append(result)
         return results

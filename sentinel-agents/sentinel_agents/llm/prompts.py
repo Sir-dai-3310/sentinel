@@ -1,4 +1,21 @@
-"""LLM prompts for security analysis."""
+"""LLM prompts for security analysis.
+
+Prompt *templates* are externalized to Markdown files (see
+``sentinel-agents/prompts/``) and loaded via
+:mod:`sentinel_agents.llm.prompt_loader`. Operators can override them with the
+``SENTINEL_PROMPTS_DIR`` env var; built-in defaults are used as a fallback.
+These builder functions keep their original signatures and output semantics.
+"""
+
+from sentinel_agents.llm.prompt_loader import load_template
+
+
+def _format_log(log: dict) -> str:
+    """Format log dictionary as readable string."""
+    lines = []
+    for key, value in log.items():
+        lines.append(f"  {key}: {value}")
+    return "\n".join(lines)
 
 
 def build_analysis_prompt(log: dict, context: str = "") -> str:
@@ -12,38 +29,14 @@ def build_analysis_prompt(log: dict, context: str = "") -> str:
     Returns:
         Formatted prompt
     """
-    base_prompt = f"""You are a security analyst AI. Analyze this security log and provide a structured verdict.
-
-Log Event:
-{_format_log(log)}
-"""
-
+    context_block = ""
     if context:
-        base_prompt += f"""
+        context_block = f"""
 Additional Context:
 {context}
 """
-
-    base_prompt += """
-Provide your analysis in the following format:
-- malicious: true/false (whether this log indicates malicious activity)
-- danger_level: 0-100 (0=benign, 100=critical threat)
-- reason: detailed explanation of your verdict
-- mitre_techniques: list of relevant MITRE ATT&CK technique IDs (e.g., ["T1059.001"])
-- recommended_actions: list of recommended response actions
-
-Be precise and base your verdict on evidence in the log.
-"""
-
-    return base_prompt
-
-
-def _format_log(log: dict) -> str:
-    """Format log dictionary as readable string."""
-    lines = []
-    for key, value in log.items():
-        lines.append(f"  {key}: {value}")
-    return "\n".join(lines)
+    template = load_template("analysis")
+    return template.format(log=_format_log(log), context_block=context_block)
 
 
 def build_hunting_prompt(verdict: dict) -> str:
@@ -56,18 +49,8 @@ def build_hunting_prompt(verdict: dict) -> str:
     Returns:
         Formatted prompt
     """
-    return f"""Based on this security verdict, generate threat hunting queries to validate and expand the finding.
-
-Verdict:
-{_format_log(verdict)}
-
-Generate 3-5 specific, actionable hunting queries that a security analyst could run to:
-1. Validate this finding
-2. Find related malicious activity
-3. Assess the scope of compromise
-
-Format each query as a clear, executable statement.
-"""
+    template = load_template("hunting")
+    return template.format(verdict=_format_log(verdict))
 
 
 def build_report_prompt(state: dict) -> str:
@@ -80,16 +63,5 @@ def build_report_prompt(state: dict) -> str:
     Returns:
         Formatted prompt
     """
-    return f"""Generate a professional security incident report based on this analysis:
-
-{_format_log(state)}
-
-Include:
-1. Executive Summary
-2. Technical Details
-3. MITRE ATT&CK Mapping
-4. Recommended Actions
-5. Indicators of Compromise (IOCs)
-
-Format as structured Markdown.
-"""
+    template = load_template("report")
+    return template.format(state=_format_log(state))

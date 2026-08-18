@@ -181,6 +181,45 @@ class LLMProviderFactory:
         cls._providers[name] = provider_class
 
     @classmethod
+    def create_for_task(cls, task: str) -> LLMProvider:
+        """
+        Create a provider for an agent task using config/llm.yml.
+
+        Reads the per-task provider/model/params via
+        :class:`sentinel_agents.llm.config.LLMConfig`. Falls back to the
+        env-driven ``create`` behaviour when no config is present.
+
+        Args:
+            task: one of triage / analyst / hunter / reporter
+
+        Returns:
+            LLM provider instance configured for the task
+        """
+        from sentinel_agents.llm.config import get_llm_config
+
+        settings = get_llm_config().for_task(task)
+        provider_name = settings.get("provider")
+        if not provider_name:
+            # No config for this task -> env-driven default
+            return cls.create()
+        return cls.create(provider_name)
+
+    @classmethod
+    def params_for_task(cls, task: str) -> dict[str, Any]:
+        """
+        Generation parameters (temperature/max_tokens/top_p) for a task from
+        config/llm.yml. Returns {} when unconfigured.
+        """
+        from sentinel_agents.llm.config import get_llm_config
+
+        settings = get_llm_config().for_task(task)
+        return {
+            k: settings[k]
+            for k in ("temperature", "max_tokens", "top_p")
+            if k in settings
+        }
+
+    @classmethod
     def list_providers(cls) -> list[dict[str, Any]]:
         """List all registered providers with availability status."""
         result = []

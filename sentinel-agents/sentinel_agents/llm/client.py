@@ -6,12 +6,8 @@ from typing import Any, TypeVar
 from langchain_core.language_models import BaseChatModel
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
-from tenacity import (
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_exponential,
-)
+
+from sentinel_agents.utils.retry import async_retry
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -50,18 +46,14 @@ class LLMClient:
 
         self.model = model
         self.temperature = temperature
+        self.max_retries = max_retries
         self.total_tokens = 0
         self.total_calls = 0
 
-    @retry(
-        retry=retry_if_exception_type(Exception),
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=2, max=10),
-        reraise=True,
-    )
     async def ainvoke(self, prompt: str, **kwargs: Any) -> str:
         """
-        Invoke LLM with automatic retry.
+        Invoke LLM with automatic retry (exponential backoff, retryable
+        exceptions only).
 
         Args:
             prompt: Prompt string
@@ -73,7 +65,10 @@ class LLMClient:
         Raises:
             Exception: If all retries fail
         """
-        response = await self.model.ainvoke(prompt, **kwargs)
+        async for attempt in async_retry(attempts=self.max_retries):
+            with attempt:
+                response = await self.model.ainvoke(prompt, **kwargs)
+
         self.total_calls += 1
 
         # Track token usage if available

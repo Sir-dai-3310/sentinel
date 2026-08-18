@@ -1,0 +1,15 @@
+# Sentinel data-masking configuration.
+#
+# Active only when the MASKING_ENABLED env var is "true". Masking runs on the
+# analysis result payload BEFORE it is persisted, so sensitive values are never
+# stored in the clear.
+#
+# Path selection uses dotted paths into the stored log_event / result JSON.
+enabled: true
+rules:
+  - {path: user.name, strategy: redact}          # full redaction -> ***
+  - {path: user.email, strategy: hash}           # stable pseudonym -> sha256[:16]
+  - {path: source.ip, strategy: partial}         # IPv4 -> 192.168.***.***
+  - {path: process.command_line, strategy: partial}
+  - {path: SourceIp, strategy: partial}          # sysmon-style top-level fields
+  - {path: CommandLine, strategy: partial}

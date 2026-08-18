@@ -78,14 +78,36 @@ async def analyze_log(log: dict) -> IncidentState:
     """
     Analyze a single log event.
 
+    The raw log first passes through the optional preprocessing pipeline
+    (field mapping / filters / enrichment). With no preprocessing config the
+    pipeline is a zero-overhead no-op. A log dropped by a filter short-
+    circuits to a benign, skipped verdict.
+
     Args:
         log: Log event dictionary
 
     Returns:
         IncidentState with final verdict
     """
+    from sentinel_agents.preprocessing import preprocess
+    from sentinel_agents.state import Verdict
+
+    processed = preprocess(log)
+    if processed is None:
+        # Dropped by a preprocessing filter: nothing to analyze.
+        return IncidentState(
+            log=log,
+            skipped_llm=True,
+            verdict=Verdict(
+                malicious=False,
+                danger_level=0,
+                reason="Dropped by preprocessing filter",
+            ),
+            metadata={"preprocessing": "dropped"},
+        )
+
     graph = get_graph()
-    initial_state = IncidentState(log=log)
+    initial_state = IncidentState(log=processed)
 
     final_state = await graph.ainvoke(initial_state)
     return final_state

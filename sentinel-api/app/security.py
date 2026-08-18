@@ -56,7 +56,15 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 class RateLimiter:
-    """Simple in-memory rate limiter using token bucket algorithm."""
+    """
+    Sliding-window rate limiter.
+
+    Two backends:
+      - In-memory (default): per-process token window. Simple, no deps.
+      - Redis (optional): shared across API replicas, survives restarts.
+        Enabled when REDIS_URL is set *and* redis-py is installed.
+        Any Redis error transparently falls back to the in-memory window.
+    """
 
     def __init__(self, rate: int = 100, per: int = 60):
         """
@@ -69,6 +77,27 @@ class RateLimiter:
         self.rate = rate
         self.per = per
         self.buckets: dict[str, list[float]] = defaultdict(list)
+        self._redis = self._connect_redis()
+
+    def _connect_redis(self):
+        """Connect to Redis if configured & the client lib is present."""
+        url = os.getenv("REDIS_URL")
+        if not url:
+            return None
+        try:
+            import redis  # type: ignore
+
+            client = redis.Redis.from_url(url, socket_timeout=1, socket_connect_timeout=1)
+            client.ping()
+            return client
+        except Exception:
+            # Lib missing or server unreachable -> in-memory fallback
+            return None
+
+    @property
+    def backend(self) -> str:
+        """Active backend name ('redis' or 'memory')."""
+        return "redis" if self._redis is not None else "memory"
 
     def is_allowed(self, key: str) -> bool:
         """
@@ -80,20 +109,39 @@ class RateLimiter:
         Returns:
             True if allowed, False if rate limited
         """
+        if self._redis is not None:
+            try:
+                return self._redis_allowed(key)
+            except Exception:
+                pass  # fall through to memory
+        return self._memory_allowed(key)
+
+    def _redis_allowed(self, key: str) -> bool:
+        """Fixed-window counter in Redis with TTL."""
+        rkey = f"sentinel:rl:{key}:{int(time.time() // self.per)}"
+        count = self._redis.incr(rkey)
+        if count == 1:
+            self._redis.expire(rkey, self.per)
+        return count <= self.rate
+
+    def _memory_allowed(self, key: str) -> bool:
         now = time.time()
         bucket = self.buckets[key]
-
-        # Remove old entries
         bucket[:] = [t for t in bucket if now - t < self.per]
-
         if len(bucket) < self.rate:
             bucket.append(now)
             return True
-
         return False
 
     def remaining(self, key: str) -> int:
         """Get remaining requests in current window."""
+        if self._redis is not None:
+            try:
+                rkey = f"sentinel:rl:{key}:{int(time.time() // self.per)}"
+                used = int(self._redis.get(rkey) or 0)
+                return max(0, self.rate - used)
+            except Exception:
+                pass
         now = time.time()
         bucket = self.buckets[key]
         bucket[:] = [t for t in bucket if now - t < self.per]

@@ -1,6 +1,7 @@
 """Analysis endpoints with real agent integration."""
 
 import asyncio
+import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -8,10 +9,56 @@ from pydantic import BaseModel
 
 from app.auth.jwt import User, require_auth
 from app.rbac import require_permission
+from app.tenancy import resolve_tenant_id
 from sentinel_agents.graph import analyze_log
 from sentinel_agents.state import IncidentState
+from sentinel_agents.utils.masking import mask
 
 router = APIRouter(dependencies=[Depends(require_auth)])
+
+
+async def _persist_result(
+    log: dict[str, Any], result: IncidentState, user: User
+) -> None:
+    """
+    Persist an analysis result to the DB.
+
+    The log event is masked BEFORE storage (store-masked, never in the clear)
+    when masking is enabled. Persistence is best-effort: a DB outage must not
+    fail the analysis request itself.
+    """
+    try:
+        from app.db.models import AnalysisResult as AnalysisResultRow
+        from app.db.session import async_session
+
+        tenant_id = resolve_tenant_id(user)
+        verdict = result.verdict
+        async with async_session() as session:
+            session.add(
+                AnalysisResultRow(
+                    log_event=mask(log),  # store masked
+                    malicious=verdict.malicious if verdict else None,
+                    danger_level=verdict.danger_level if verdict else None,
+                    reason=verdict.reason if verdict else None,
+                    mitre_techniques=verdict.mitre_techniques if verdict else None,
+                    recommended_actions=(
+                        verdict.recommended_actions if verdict else None
+                    ),
+                    rule_hits=[h.model_dump() for h in result.rule_hits],
+                    rule_hit_count=len(result.rule_hits),
+                    agent_trace=result.agent_trace,
+                    skipped_llm=result.skipped_llm,
+                    threat_intel=[ti.model_dump() for ti in result.threat_intel],
+                    threat_intel_count=len(result.threat_intel),
+                    metadata_json=result.metadata,
+                    user_id=user.username,
+                    request_id=uuid.uuid4().hex,
+                    tenant_id=tenant_id,
+                )
+            )
+            await session.commit()
+    except Exception as e:  # pragma: no cover - DB may be absent in tests
+        print(f"⚠️  analysis persistence skipped: {e}")
 
 
 class LogInput(BaseModel):
@@ -48,15 +95,22 @@ class BatchAnalysisResult(BaseModel):
 
 
 @router.post("/analyze", response_model=AnalysisResult)
-async def analyze_log_endpoint(input: LogInput) -> AnalysisResult:
+async def analyze_log_endpoint(
+    input: LogInput, user: User = Depends(require_auth)
+) -> AnalysisResult:
     """
     Analyze a single log event.
 
     Returns complete analysis including verdict, rule hits, and threat intel.
+    The result is persisted (with masking applied before storage) for audit
+    and GDPR subject access.
     """
     try:
         # Call real agent graph
         result: IncidentState = await analyze_log(input.log)
+
+        # Persist (masked) for audit / GDPR; non-fatal if DB unavailable.
+        await _persist_result(input.log, result, user)
 
         # Convert to API response format
         return AnalysisResult(
