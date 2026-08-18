@@ -108,12 +108,11 @@ async def test_analyze_log_integration():
             result = await analyze_log(log)
 
             assert result is not None
-            # LangGraph ainvoke returns state as dict
-            assert "rule_hits" in result
-            assert "agent_trace" in result
+            # analyze_log returns an IncidentState (pydantic model)
+            assert isinstance(result, IncidentState)
             # Triage agent should have run and detected PowerShell encoded command
-            assert len(result["rule_hits"]) > 0
-            assert "TriageAgent" in result["agent_trace"]
+            assert len(result.rule_hits) > 0
+            assert "TriageAgent" in result.agent_trace
 
     # Clean up: reset graph singleton for other tests
     graph_module._graph = None
