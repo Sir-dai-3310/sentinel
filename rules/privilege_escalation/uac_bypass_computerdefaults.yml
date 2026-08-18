@@ -1,0 +1,20 @@
+title: UAC Bypass ComputerDefaults
+id: R032
+status: stable
+description: Detects UAC bypass via computerdefaults.exe
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    Image|endswith: 'computerdefaults.exe'
+    CommandLine|contains: 'powershell'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.t1548.002

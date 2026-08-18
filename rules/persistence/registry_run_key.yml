@@ -1,0 +1,23 @@
+title: Registry Run Key Persistence
+id: R006
+status: stable
+description: Detects persistence via registry Run keys
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  service: sysmon
+detection:
+  selection:
+    EventID: '13'
+    TargetObject|contains: '\CurrentVersion\Run'
+  condition: selection
+falsepositives:
+  - Software installation
+  - Legitimate startup programs
+level: high
+tags:
+  - attack.persistence
+  - attack.t1547.001
+references:
+  - https://attack.mitre.org/techniques/T1547/001/

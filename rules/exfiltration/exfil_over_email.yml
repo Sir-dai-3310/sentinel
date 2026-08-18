@@ -1,0 +1,21 @@
+title: Exfiltration Over Email
+id: R092
+status: stable
+description: Detects data exfiltration via email
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'Send-MailMessage'
+      - 'smtp'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: medium
+tags:
+  - attack.exfiltration
+  - attack.t1048

@@ -1,0 +1,77 @@
+{
+  "nav": {
+    "dashboard": "Panel",
+    "analysis": "Análisis",
+    "rules": "Reglas",
+    "settings": "Configuración"
+  },
+  "dashboard": {
+    "title": "Panel de Seguridad",
+    "subtitle": "Detección y análisis de amenazas en tiempo real",
+    "totalEvents": "Eventos Totales",
+    "alerts": "Alertas",
+    "critical": "Críticos",
+    "accuracy": "Precisión",
+    "systemStatus": "Estado del Sistema",
+    "apiConnection": "Conexión API",
+    "dataRefresh": "Actualización de Datos",
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "loading": "Cargando..."
+  },
+  "analysis": {
+    "title": "Análisis de Registros",
+    "subtitle": "Análisis de seguridad con IA",
+    "dropzone": "Suelta tu archivo de registro aquí",
+    "browseFiles": "Explorar Archivos",
+    "analyzing": "Analizando...",
+    "result": "Resultado del Análisis",
+    "malicious": "Malicioso",
+    "benign": "Benigno",
+    "dangerLevel": "Nivel de Peligro",
+    "reason": "Razón del Análisis",
+    "mitreTechniques": "Técnicas MITRE ATT&CK",
+    "ruleHits": "Reglas Activadas",
+    "agentTrace": "Traza de Agentes",
+    "recommendedActions": "Acciones Recomendadas",
+    "connected": "Conectado al servicio de análisis",
+    "disconnected": "Desconectado",
+    "error": "Error de Análisis"
+  },
+  "rules": {
+    "title": "Reglas Sigma",
+    "subtitle": "{{count}} reglas de detección",
+    "newRule": "Nueva Regla",
+    "reload": "Recargar",
+    "loading": "Cargando reglas...",
+    "error": "Error al cargar reglas",
+    "noRules": "No se encontraron reglas",
+    "confirmDelete": "¿Eliminar regla {{id}}?"
+  },
+  "settings": {
+    "title": "Configuración",
+    "subtitle": "Configurar Sentinel",
+    "llmConfig": "Configuración LLM",
+    "model": "Modelo",
+    "baseUrl": "URL Base",
+    "temperature": "Temperatura",
+    "maxTokens": "Máx. Tokens",
+    "threatIntel": "Inteligencia de Amenazas",
+    "enabled": "Habilitado",
+    "disabled": "Deshabilitado",
+    "systemConfig": "Configuración del Sistema",
+    "environment": "Entorno",
+    "corsOrigins": "Orígenes CORS",
+    "rulesDir": "Directorio de Reglas",
+    "logLevel": "Nivel de Log",
+    "securityNote": "Nota de Seguridad",
+    "securityNoteText": "Las claves API y la configuración sensible solo se gestionan mediante variables de entorno.",
+    "loading": "Cargando configuración...",
+    "error": "Error al cargar configuración"
+  },
+  "common": {
+    "language": "Idioma",
+    "english": "English",
+    "chinese": "中文"
+  }
+}

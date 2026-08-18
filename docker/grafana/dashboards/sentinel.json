@@ -1,0 +1,176 @@
+{
+  "dashboard": {
+    "title": "Sentinel - AI Security Analysis",
+    "tags": ["sentinel", "security", "sigma"],
+    "timezone": "browser",
+    "refresh": "5s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Events Per Second (EPS)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sentinel_current_eps",
+            "legendFormat": "Current EPS"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "red", "value": 0 },
+                { "color": "yellow", "value": 5000 },
+                { "color": "green", "value": 10000 }
+              ]
+            },
+            "unit": "eps"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Average Latency",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sentinel_avg_latency_us / 1000",
+            "legendFormat": "Avg Latency (ms)"
+          }
+        ],
+        "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "green", "value": 0 },
+                { "color": "yellow", "value": 5 },
+                { "color": "red", "value": 10 }
+              ]
+            },
+            "unit": "ms"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Total Evaluations",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sentinel_evaluations_total",
+            "legendFormat": "Total Evaluations"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 }
+      },
+      {
+        "id": 4,
+        "title": "Total Rule Hits",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sentinel_hits_total",
+            "legendFormat": "Total Hits"
+          }
+        ],
+        "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 }
+      },
+      {
+        "id": 5,
+        "title": "Evaluation Rate Over Time",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(sentinel_evaluations_total[5m])",
+            "legendFormat": "Evaluations/sec"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 }
+      },
+      {
+        "id": 6,
+        "title": "Hit Rate Over Time",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(sentinel_hits_total[5m])",
+            "legendFormat": "Hits/sec"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 }
+      },
+      {
+        "id": 7,
+        "title": "Cache Performance",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(sentinel_condition_cache_hits_total[5m])",
+            "legendFormat": "Condition Cache Hits/sec"
+          },
+          {
+            "expr": "rate(sentinel_condition_cache_misses_total[5m])",
+            "legendFormat": "Condition Cache Misses/sec"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 }
+      },
+      {
+        "id": 8,
+        "title": "Fast Path Skips",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(sentinel_event_id_skips_total[5m])",
+            "legendFormat": "EventID Skips/sec"
+          },
+          {
+            "expr": "rate(sentinel_field_presence_skips_total[5m])",
+            "legendFormat": "Field Presence Skips/sec"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 }
+      },
+      {
+        "id": 9,
+        "title": "API Request Rate",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "legendFormat": "{{method}} {{handler}}"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 }
+      },
+      {
+        "id": 10,
+        "title": "API Response Time (p95)",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "{{handler}}"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 }
+      },
+      {
+        "id": 11,
+        "title": "Rules Loaded",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sentinel_rules_loaded",
+            "legendFormat": "Rules"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 28, "w": 6, "h": 4 }
+      }
+    ]
+  }
+}

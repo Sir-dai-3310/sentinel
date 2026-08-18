@@ -1,0 +1,22 @@
+title: Malicious Web Service Setup
+id: R123
+status: stable
+description: Detects malicious web service setup
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'python -m http.server'
+      - 'php -S'
+      - 'ruby -run -e httpd'
+  condition: selection
+falsepositives:
+  - Legitimate administrative activity
+level: medium
+tags:
+  - attack.resource_development
+  - attack.t1583.006

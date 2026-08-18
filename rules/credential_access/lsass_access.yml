@@ -1,0 +1,30 @@
+title: LSASS Memory Access
+id: R003
+status: stable
+description: Detects suspicious access to LSASS process (credential dumping)
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  service: sysmon
+detection:
+  selection:
+    EventID: '10'
+    TargetImage|endswith: 'lsass.exe'
+    GrantedAccess|contains:
+      - '0x1410'
+      - '0x1010'
+      - '0x1fffff'
+      - '0x1f0fff'
+      - '0x143a'
+  condition: selection
+falsepositives:
+  - Legitimate security tools
+  - System processes
+level: critical
+tags:
+  - attack.credential_access
+  - attack.t1003.001
+references:
+  - https://attack.mitre.org/techniques/T1003/001/
+  - https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon

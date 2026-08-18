@@ -1,0 +1,22 @@
+title: Exfiltration to Cloud Storage
+id: R094
+status: stable
+description: Detects exfiltration to cloud storage services
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'rclone'
+      - 'aws s3'
+      - 'gsutil'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: high
+tags:
+  - attack.exfiltration
+  - attack.t1567.002

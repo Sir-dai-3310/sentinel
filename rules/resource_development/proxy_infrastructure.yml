@@ -1,0 +1,22 @@
+title: Proxy Infrastructure Setup
+id: R119
+status: stable
+description: Detects proxy server setup
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'tinyproxy'
+      - '3proxy'
+      - 'ProxyCap'
+  condition: selection
+falsepositives:
+  - Legitimate administrative activity
+level: high
+tags:
+  - attack.resource_development
+  - attack.t1584.004

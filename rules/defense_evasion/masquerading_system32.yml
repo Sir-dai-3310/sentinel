@@ -1,0 +1,25 @@
+title: Masquerading as System32 Binary
+id: R055
+status: stable
+description: Detects processes masquerading as system binaries from wrong paths
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    Image|endswith:
+      - 'svchost.exe'
+      - 'lsass.exe'
+    Image|contains:
+      - 'Temp'
+      - 'AppData'
+      - 'Public'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: critical
+tags:
+  - attack.defense_evasion
+  - attack.t1036

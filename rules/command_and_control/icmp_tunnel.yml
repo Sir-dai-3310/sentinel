@@ -1,0 +1,21 @@
+title: ICMP Tunneling
+id: R085
+status: stable
+description: Detects ICMP tunneling attempts
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'icmpsh'
+      - 'ping -l'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: high
+tags:
+  - attack.command_and_control
+  - attack.t1095

@@ -1,0 +1,21 @@
+title: Payload Staging
+id: R118
+status: stable
+description: Detects payload staging to temp directories
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    TargetFilename|contains:
+      - '\\Temp\\'
+      - '\\AppData\\Local\\Temp'
+  condition: selection
+falsepositives:
+  - Legitimate administrative activity
+level: medium
+tags:
+  - attack.resource_development
+  - attack.t1608

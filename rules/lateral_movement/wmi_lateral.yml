@@ -1,0 +1,22 @@
+title: WMI Lateral Movement
+id: R099
+status: stable
+description: Detects lateral movement via WMI
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'wmic'
+      - '/node:'
+      - 'process call create'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: high
+tags:
+  - attack.lateral_movement
+  - attack.t1047

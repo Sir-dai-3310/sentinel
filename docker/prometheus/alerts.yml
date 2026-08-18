@@ -1,0 +1,60 @@
+groups:
+  - name: sentinel_alerts
+    rules:
+      # High error rate
+      - alert: SentinelHighErrorRate
+        expr: |
+          rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: sentinel-api
+        annotations:
+          summary: "High error rate on Sentinel API"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+
+      # High latency
+      - alert: SentinelHighLatency
+        expr: |
+          sentinel_avg_latency_us / 1000 > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: sentinel-core
+        annotations:
+          summary: "High rule evaluation latency"
+          description: "Average latency is {{ $value }}ms (threshold: 10ms)"
+
+      # Service down
+      - alert: SentinelServiceDown
+        expr: up{job=~"sentinel-.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Sentinel service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} has been down for more than 1 minute"
+
+      # Low throughput
+      - alert: SentinelLowThroughput
+        expr: sentinel_current_eps < 1000
+        for: 10m
+        labels:
+          severity: warning
+          service: sentinel-core
+        annotations:
+          summary: "Low rule evaluation throughput"
+          description: "Current EPS is {{ $value }} (expected: >5000)"
+
+      # Cache miss rate too high
+      - alert: SentinelHighCacheMissRate
+        expr: |
+          rate(sentinel_condition_cache_misses_total[5m]) /
+          (rate(sentinel_condition_cache_hits_total[5m]) + rate(sentinel_condition_cache_misses_total[5m])) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          service: sentinel-core
+        annotations:
+          summary: "High condition cache miss rate"
+          description: "Cache miss rate is {{ $value | humanizePercentage }}"

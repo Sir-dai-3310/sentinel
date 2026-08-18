@@ -1,0 +1,25 @@
+title: Signed Binary Proxy Execution
+id: R058
+status: stable
+description: Detects proxy execution via signed binaries
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    Image|endswith:
+      - 'mshta.exe'
+      - 'regsvr32.exe'
+      - 'wmic.exe'
+    CommandLine|contains:
+      - 'http'
+      - 'javascript'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1218

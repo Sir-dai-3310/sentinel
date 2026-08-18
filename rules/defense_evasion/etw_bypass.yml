@@ -1,0 +1,21 @@
+title: ETW Bypass Attempt
+id: R052
+status: stable
+description: Detects ETW (Event Tracing) bypass attempts
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'EtwEventWrite'
+      - 'ntdll.dll'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: critical
+tags:
+  - attack.defense_evasion
+  - attack.t1562.006

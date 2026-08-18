@@ -1,0 +1,21 @@
+title: Token Manipulation
+id: R033
+status: stable
+description: Detects token manipulation attempts
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'DuplicateTokenEx'
+      - 'ImpersonateLoggedOnUser'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.t1134

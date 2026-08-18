@@ -1,0 +1,36 @@
+# Sentinel API - FastAPI Backend
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r sentinel && useradd -r -g sentinel sentinel
+
+# Copy API project
+COPY sentinel-api /app
+
+# Install dependencies
+RUN pip install --no-cache-dir \
+    fastapi[all] \
+    uvicorn[standard] \
+    gunicorn \
+    redis \
+    psycopg2-binary \
+    websockets \
+    prometheus-fastapi-instrumentator
+
+# Set ownership to non-root user
+RUN chown -R sentinel:sentinel /app
+
+# Switch to non-root user
+USER sentinel
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

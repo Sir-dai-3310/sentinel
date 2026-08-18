@@ -1,0 +1,39 @@
+# Sentinel Core - Rust Engine
+FROM rust:1.75-slim as builder
+
+WORKDIR /app
+
+# Copy workspace files
+COPY Cargo.toml Cargo.lock ./
+COPY sentinel-core ./sentinel-core
+
+# Build release binary
+RUN cargo build --release --package sentinel-core
+
+# Runtime image
+FROM debian:bookworm-slim
+
+# Create non-root user
+RUN groupadd -r sentinel && useradd -r -g sentinel sentinel
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /app/target/release/sentinel-core /app/sentinel-core
+
+# Copy rules
+COPY rules /app/rules
+
+# Set ownership to non-root user
+RUN chown -R sentinel:sentinel /app
+
+# Switch to non-root user
+USER sentinel
+
+EXPOSE 50051
+
+CMD ["/app/sentinel-core", "--rules-dir", "/app/rules", "--port", "50051"]

@@ -1,0 +1,21 @@
+title: Disable Windows Defender
+id: R053
+status: stable
+description: Detects attempts to disable Windows Defender
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'Set-MpPreference'
+      - 'DisableRealtimeMonitoring'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: critical
+tags:
+  - attack.defense_evasion
+  - attack.t1562.001

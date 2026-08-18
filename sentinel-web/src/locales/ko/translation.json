@@ -1,0 +1,77 @@
+{
+  "nav": {
+    "dashboard": "대시보드",
+    "analysis": "로그 분석",
+    "rules": "규칙 관리",
+    "settings": "설정"
+  },
+  "dashboard": {
+    "title": "보안 대시보드",
+    "subtitle": "실시간 위협 탐지 및 분석",
+    "totalEvents": "총 이벤트",
+    "alerts": "경고",
+    "critical": "심각",
+    "accuracy": "정확도",
+    "systemStatus": "시스템 상태",
+    "apiConnection": "API 연결",
+    "dataRefresh": "데이터 새로고침",
+    "connected": "연결됨",
+    "disconnected": "연결 끊김",
+    "loading": "로딩 중..."
+  },
+  "analysis": {
+    "title": "로그 분석",
+    "subtitle": "AI 기반 보안 로그 분석",
+    "dropzone": "로그 파일을 여기에 드롭",
+    "browseFiles": "파일 찾기",
+    "analyzing": "분석 중...",
+    "result": "분석 결과",
+    "malicious": "악성",
+    "benign": "정상",
+    "dangerLevel": "위험 수준",
+    "reason": "분석 이유",
+    "mitreTechniques": "MITRE ATT&CK 기술",
+    "ruleHits": "규칙 적중",
+    "agentTrace": "에이전트 실행 추적",
+    "recommendedActions": "권장 조치",
+    "connected": "분석 서비스에 연결됨",
+    "disconnected": "연결 끊김",
+    "error": "분석 오류"
+  },
+  "rules": {
+    "title": "Sigma 규칙",
+    "subtitle": "{{count}}개의 탐지 규칙",
+    "newRule": "새 규칙",
+    "reload": "새로고침",
+    "loading": "규칙 로딩 중...",
+    "error": "규칙 로딩 실패",
+    "noRules": "규칙을 찾을 수 없음",
+    "confirmDelete": "규칙 {{id}}를 삭제하시겠습니까?"
+  },
+  "settings": {
+    "title": "설정",
+    "subtitle": "Sentinel 구성",
+    "llmConfig": "LLM 구성",
+    "model": "모델",
+    "baseUrl": "기본 URL",
+    "temperature": "온도",
+    "maxTokens": "최대 토큰",
+    "threatIntel": "위협 인텔리전스",
+    "enabled": "활성화",
+    "disabled": "비활성화",
+    "systemConfig": "시스템 구성",
+    "environment": "환경",
+    "corsOrigins": "CORS 오리진",
+    "rulesDir": "규칙 디렉토리",
+    "logLevel": "로그 수준",
+    "securityNote": "보안 참고",
+    "securityNoteText": "API 키와 민감한 설정은 환경 변수로만 관리됩니다.",
+    "loading": "설정 로딩 중...",
+    "error": "설정 로딩 실패"
+  },
+  "common": {
+    "language": "언어",
+    "english": "English",
+    "chinese": "中文"
+  }
+}

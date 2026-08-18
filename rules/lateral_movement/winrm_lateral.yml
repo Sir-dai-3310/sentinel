@@ -1,0 +1,22 @@
+title: WinRM Lateral Movement
+id: R100
+status: stable
+description: Detects lateral movement via WinRM
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'winrm'
+      - 'Enter-PSSession'
+      - 'Invoke-Command'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: high
+tags:
+  - attack.lateral_movement
+  - attack.t1021.006

@@ -1,0 +1,77 @@
+{
+  "nav": {
+    "dashboard": "ダッシュボード",
+    "analysis": "ログ分析",
+    "rules": "ルール管理",
+    "settings": "設定"
+  },
+  "dashboard": {
+    "title": "セキュリティダッシュボード",
+    "subtitle": "リアルタイム脅威検出と分析",
+    "totalEvents": "総イベント数",
+    "alerts": "アラート",
+    "critical": "重大",
+    "accuracy": "精度",
+    "systemStatus": "システムステータス",
+    "apiConnection": "API接続",
+    "dataRefresh": "データ更新",
+    "connected": "接続済み",
+    "disconnected": "切断",
+    "loading": "読み込み中..."
+  },
+  "analysis": {
+    "title": "ログ分析",
+    "subtitle": "セキュリティログをAIで分析",
+    "dropzone": "ログファイルをここにドロップ",
+    "browseFiles": "ファイルを参照",
+    "analyzing": "分析中...",
+    "result": "分析結果",
+    "malicious": "悪意あり",
+    "benign": "正常",
+    "dangerLevel": "危険レベル",
+    "reason": "分析理由",
+    "mitreTechniques": "MITRE ATT&CK テクニック",
+    "ruleHits": "ルールヒット",
+    "agentTrace": "エージェント実行トレース",
+    "recommendedActions": "推奨アクション",
+    "connected": "分析サービスに接続済み",
+    "disconnected": "切断",
+    "error": "分析エラー"
+  },
+  "rules": {
+    "title": "Sigma ルール",
+    "subtitle": "{{count}} 件の検出ルール",
+    "newRule": "新規ルール",
+    "reload": "再読み込み",
+    "loading": "ルール読み込み中...",
+    "error": "ルールの読み込みに失敗",
+    "noRules": "ルールが見つかりません",
+    "confirmDelete": "ルール {{id}} を削除しますか？"
+  },
+  "settings": {
+    "title": "設定",
+    "subtitle": "Sentinel の設定",
+    "llmConfig": "LLM 設定",
+    "model": "モデル",
+    "baseUrl": "ベースURL",
+    "temperature": "温度",
+    "maxTokens": "最大トークン数",
+    "threatIntel": "脅威インテリジェンス",
+    "enabled": "有効",
+    "disabled": "無効",
+    "systemConfig": "システム設定",
+    "environment": "環境",
+    "corsOrigins": "CORS オリジン",
+    "rulesDir": "ルールディレクトリ",
+    "logLevel": "ログレベル",
+    "securityNote": "セキュリティノート",
+    "securityNoteText": "APIキーと機密設定は環境変数でのみ管理されます。",
+    "loading": "設定読み込み中...",
+    "error": "設定の読み込みに失敗"
+  },
+  "common": {
+    "language": "言語",
+    "english": "English",
+    "chinese": "中文"
+  }
+}

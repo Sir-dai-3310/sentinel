@@ -1,0 +1,25 @@
+title: Suspicious Network Service Discovery
+id: R014
+status: stable
+description: Detects network service scanning commands
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'nmap'
+      - 'netstat -an'
+      - 'Get-NetTCPConnection'
+  condition: selection
+falsepositives:
+  - Network administration
+  - Security scanning (authorized)
+level: medium
+tags:
+  - attack.discovery
+  - attack.t1046
+references:
+  - https://attack.mitre.org/techniques/T1046/

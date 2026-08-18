@@ -1,0 +1,21 @@
+title: RegSvcs/RegAsm Execution
+id: R106
+status: stable
+description: Detects RegSvcs/RegAsm proxy execution
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    Image|endswith:
+      - 'regsvcs.exe'
+      - 'regasm.exe'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: medium
+tags:
+  - attack.execution
+  - attack.t1218.009

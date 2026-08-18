@@ -1,0 +1,77 @@
+{
+  "nav": {
+    "dashboard": "仪表盘",
+    "analysis": "日志分析",
+    "rules": "规则管理",
+    "settings": "系统设置"
+  },
+  "dashboard": {
+    "title": "安全仪表盘",
+    "subtitle": "实时威胁检测与分析",
+    "totalEvents": "总事件数",
+    "alerts": "告警数",
+    "critical": "严重告警",
+    "accuracy": "准确率",
+    "systemStatus": "系统状态",
+    "apiConnection": "API 连接",
+    "dataRefresh": "数据刷新",
+    "connected": "已连接",
+    "disconnected": "已断开",
+    "loading": "加载中..."
+  },
+  "analysis": {
+    "title": "日志分析",
+    "subtitle": "上传安全日志进行 AI 智能分析",
+    "dropzone": "拖拽日志文件到这里",
+    "browseFiles": "浏览文件",
+    "analyzing": "分析中...",
+    "result": "分析结果",
+    "malicious": "恶意",
+    "benign": "正常",
+    "dangerLevel": "危险等级",
+    "reason": "分析原因",
+    "mitreTechniques": "MITRE ATT&CK 技术",
+    "ruleHits": "规则命中",
+    "agentTrace": "Agent 执行链路",
+    "recommendedActions": "建议操作",
+    "connected": "已连接到分析服务",
+    "disconnected": "已断开",
+    "error": "分析错误"
+  },
+  "rules": {
+    "title": "Sigma 规则",
+    "subtitle": "共 {{count}} 条检测规则",
+    "newRule": "新建规则",
+    "reload": "重新加载",
+    "loading": "加载规则中...",
+    "error": "加载规则失败",
+    "noRules": "未找到规则",
+    "confirmDelete": "确认删除规则 {{id}}?"
+  },
+  "settings": {
+    "title": "系统设置",
+    "subtitle": "配置 Sentinel",
+    "llmConfig": "LLM 配置",
+    "model": "模型",
+    "baseUrl": "基础 URL",
+    "temperature": "温度",
+    "maxTokens": "最大 Token 数",
+    "threatIntel": "威胁情报",
+    "enabled": "已启用",
+    "disabled": "未启用",
+    "systemConfig": "系统配置",
+    "environment": "运行环境",
+    "corsOrigins": "CORS 域名",
+    "rulesDir": "规则目录",
+    "logLevel": "日志级别",
+    "securityNote": "安全提示",
+    "securityNoteText": "API 密钥和敏感配置仅通过环境变量管理。",
+    "loading": "加载设置中...",
+    "error": "加载设置失败"
+  },
+  "common": {
+    "language": "语言",
+    "english": "English",
+    "chinese": "中文"
+  }
+}

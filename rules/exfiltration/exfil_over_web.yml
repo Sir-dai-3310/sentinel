@@ -1,0 +1,22 @@
+title: Exfiltration Over Web Service
+id: R091
+status: stable
+description: Detects data exfiltration over web services
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'Invoke-RestMethod'
+      - 'Invoke-WebRequest'
+      - '-Method Post'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: high
+tags:
+  - attack.exfiltration
+  - attack.t1567

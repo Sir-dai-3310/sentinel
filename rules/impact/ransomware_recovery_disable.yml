@@ -1,0 +1,21 @@
+title: Recovery Options Disabled
+id: R096
+status: stable
+description: Detects disabling of recovery options
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'bcdedit'
+      - 'recoveryenabled'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: critical
+tags:
+  - attack.impact
+  - attack.t1490

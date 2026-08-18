@@ -1,0 +1,21 @@
+title: Proxy Usage for C2
+id: R086
+status: stable
+description: Detects proxy configuration for C2
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'netsh winhttp set proxy'
+      - 'ProxyServer'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: medium
+tags:
+  - attack.command_and_control
+  - attack.t1090

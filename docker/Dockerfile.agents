@@ -1,0 +1,30 @@
+# Sentinel Agents - Python AI Layer
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r sentinel && useradd -r -g sentinel sentinel
+
+# Copy Python project
+COPY sentinel-agents /app/sentinel-agents
+
+# Install Python dependencies
+WORKDIR /app/sentinel-agents
+RUN pip install --no-cache-dir -e .
+
+# Set ownership to non-root user
+RUN chown -R sentinel:sentinel /app
+
+# Switch to non-root user
+USER sentinel
+
+# Expose gRPC port
+EXPOSE 50052
+
+CMD ["python", "-m", "sentinel_agents.server"]

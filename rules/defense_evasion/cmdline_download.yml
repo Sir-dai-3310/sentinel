@@ -1,0 +1,30 @@
+title: Command Line Download
+id: R004
+status: stable
+description: Detects file downloads via command line tools
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'Net.WebClient'
+      - 'DownloadString'
+      - 'DownloadFile'
+      - 'Invoke-WebRequest'
+      - 'certutil'
+      - '-urlcache'
+      - 'bitsadmin'
+      - '/transfer'
+  condition: selection
+falsepositives:
+  - Legitimate software updates
+  - IT deployment scripts
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.t1105
+references:
+  - https://attack.mitre.org/techniques/T1105/

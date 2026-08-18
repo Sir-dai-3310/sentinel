@@ -1,0 +1,22 @@
+title: Phishing Attachment Execution
+id: R041
+status: stable
+description: Detects execution of common phishing attachment types
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    Image|endswith:
+      - '.iso'
+      - '.img'
+      - '.vhd'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: high
+tags:
+  - attack.initial_access
+  - attack.t1566.001

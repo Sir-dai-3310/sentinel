@@ -1,0 +1,21 @@
+title: AMSI Bypass Attempt
+id: R051
+status: stable
+description: Detects AMSI bypass techniques
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'AmsiUtils'
+      - 'amsi.dll'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: critical
+tags:
+  - attack.defense_evasion
+  - attack.t1562.001

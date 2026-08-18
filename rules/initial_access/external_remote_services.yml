@@ -1,0 +1,21 @@
+title: External Remote Services
+id: R045
+status: stable
+description: Detects suspicious external remote service usage
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'mstsc.exe'
+      - '/v:'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: low
+tags:
+  - attack.initial_access
+  - attack.t1133

@@ -1,0 +1,20 @@
+title: RDP Brute Force
+id: R044
+status: stable
+description: Detects RDP brute force attempts
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    EventID: '4625'
+    LogonType: '10'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: medium
+tags:
+  - attack.initial_access
+  - attack.t1110

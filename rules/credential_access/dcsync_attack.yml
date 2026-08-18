@@ -1,0 +1,21 @@
+title: DCSync Attack
+id: R024
+status: stable
+description: Detects DCSync attacks using replication permissions
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'lsadump::dcsync'
+      - 'DRSUAPI'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: critical
+tags:
+  - attack.credential_access
+  - attack.t1003.006

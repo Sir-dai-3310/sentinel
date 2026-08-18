@@ -1,0 +1,21 @@
+title: SSH Lateral Movement
+id: R102
+status: stable
+description: Detects SSH lateral movement
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'ssh.exe'
+      - 'ssh '
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: medium
+tags:
+  - attack.lateral_movement
+  - attack.t1021.004

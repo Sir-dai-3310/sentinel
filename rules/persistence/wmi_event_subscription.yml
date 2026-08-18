@@ -1,0 +1,21 @@
+title: WMI Event Subscription
+id: R107
+status: stable
+description: Detects WMI event subscription persistence
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - '__EventFilter'
+      - '__EventConsumer'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: high
+tags:
+  - attack.persistence
+  - attack.t1546.003

@@ -1,0 +1,21 @@
+title: Timestomping
+id: R054
+status: stable
+description: Detects file timestamp manipulation
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'SetCreationTime'
+      - 'SetLastWriteTime'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1070.006

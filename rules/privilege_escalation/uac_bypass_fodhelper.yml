@@ -1,0 +1,20 @@
+title: UAC Bypass via FodHelper
+id: R031
+status: stable
+description: Detects UAC bypass using fodhelper.exe
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    Image|endswith: 'fodhelper.exe'
+    CommandLine|contains: 'powershell'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.t1548.002

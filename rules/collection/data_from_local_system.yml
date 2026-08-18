@@ -1,0 +1,30 @@
+title: Data from Local System
+id: R015
+status: stable
+description: Detects commands used to collect data from local system
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'type '
+      - 'Get-Content'
+      - 'cat '
+      - 'more '
+  filter:
+    CommandLine|contains:
+      - '.txt'
+      - '.log'
+      - '.ini'
+  condition: selection and filter
+falsepositives:
+  - Legitimate file viewing
+level: low
+tags:
+  - attack.collection
+  - attack.t1005
+references:
+  - https://attack.mitre.org/techniques/T1005/

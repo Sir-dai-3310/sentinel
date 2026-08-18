@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "sentinel-agents"
+version = "1.0.0"
+description = "AI-powered security analysis agents for Sentinel"
+authors = ["Sentinel Team"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langgraph = "^0.0.20"
+langchain = "^0.1.0"
+langchain-openai = "^0.0.2"
+openai = "^1.6.0"
+pydantic = "^2.5.0"
+httpx = "^0.25.2"
+tenacity = "^8.2.3"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+black = "^23.12.0"
+ruff = "^0.1.8"
+mypy = "^1.7.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

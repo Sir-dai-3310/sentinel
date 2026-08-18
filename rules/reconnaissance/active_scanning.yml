@@ -1,0 +1,22 @@
+title: Active Scanning
+id: R111
+status: stable
+description: Detects port scanning activity
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'nmap'
+      - 'masscan'
+      - 'zmap'
+  condition: selection
+falsepositives:
+  - Legitimate administrative activity
+level: medium
+tags:
+  - attack.reconnaissance
+  - attack.t1595

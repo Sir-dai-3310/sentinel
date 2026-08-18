@@ -1,0 +1,22 @@
+title: Disk Wipe Attempt
+id: R097
+status: stable
+description: Detects disk wiping commands
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'format'
+      - 'cipher /w'
+      - 'sdelete'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: critical
+tags:
+  - attack.impact
+  - attack.t1485

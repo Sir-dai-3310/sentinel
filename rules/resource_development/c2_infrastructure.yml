@@ -1,0 +1,22 @@
+title: C2 Infrastructure Setup
+id: R122
+status: stable
+description: Detects C2 server configuration
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'cobaltstrike'
+      - 'metasploit'
+      - 'empire'
+  condition: selection
+falsepositives:
+  - Legitimate administrative activity
+level: critical
+tags:
+  - attack.resource_development
+  - attack.t1583.006

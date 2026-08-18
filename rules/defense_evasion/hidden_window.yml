@@ -1,0 +1,24 @@
+title: Hidden Window Execution
+id: R005
+status: stable
+description: Detects processes started with hidden window style
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - '-w hidden'
+      - '-WindowStyle Hidden'
+      - 'windowstyle hidden'
+  condition: selection
+falsepositives:
+  - Legitimate background processes
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.t1564.003
+references:
+  - https://attack.mitre.org/techniques/T1564/003/

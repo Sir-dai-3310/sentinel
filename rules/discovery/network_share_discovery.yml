@@ -1,0 +1,22 @@
+title: Network Share Discovery
+id: R064
+status: stable
+description: Detects network share enumeration
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'net share'
+      - 'net view'
+      - 'Get-SmbShare'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: low
+tags:
+  - attack.discovery
+  - attack.t1135

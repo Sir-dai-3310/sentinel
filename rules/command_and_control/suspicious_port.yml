@@ -1,0 +1,32 @@
+title: Suspicious Network Connection
+id: R012
+status: stable
+description: Detects suspicious processes connecting to non-standard ports
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  service: sysmon
+detection:
+  selection:
+    EventID: '3'
+    Image|endswith:
+      - 'powershell.exe'
+      - 'cmd.exe'
+      - 'rundll32.exe'
+      - 'regsvr32.exe'
+    DestinationPort:
+      - '4444'
+      - '8080'
+      - '8443'
+      - '1337'
+      - '4445'
+  condition: selection
+falsepositives:
+  - Legitimate applications on custom ports
+level: medium
+tags:
+  - attack.command_and_control
+  - attack.t1071
+references:
+  - https://attack.mitre.org/techniques/T1071/

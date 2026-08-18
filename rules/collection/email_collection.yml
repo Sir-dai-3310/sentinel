@@ -1,0 +1,22 @@
+title: Email Collection
+id: R073
+status: stable
+description: Detects email data collection
+author: Sentinel Community
+date: 2026/08/17
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'outlook.exe'
+      - '.pst'
+      - '.ost'
+  condition: selection
+falsepositives:
+  - Administrative activity
+level: medium
+tags:
+  - attack.collection
+  - attack.t1114

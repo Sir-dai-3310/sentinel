@@ -1,0 +1,131 @@
+services:
+  # Rust Core Engine
+  core:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.core
+    ports:
+      - "50051:50051"  # gRPC
+    volumes:
+      - ./rules:/app/rules
+    environment:
+      - RUST_LOG=info
+      - RULES_DIR=/app/rules
+    networks:
+      - sentinel
+
+  # Python AI Agents
+  agents:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.agents
+    environment:
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.openai.com/v1}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4-turbo-preview}
+      - VT_API_KEY=${VT_API_KEY}
+      - SHODAN_API_KEY=${SHODAN_API_KEY}
+      - ABUSEIPDB_API_KEY=${ABUSEIPDB_API_KEY}
+      - CORE_GRPC_URL=core:50051
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://sentinel:sentinel@postgres:5432/sentinel
+    depends_on:
+      - core
+      - redis
+      - postgres
+    networks:
+      - sentinel
+
+  # FastAPI Backend
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - AGENTS_GRPC_URL=agents:50052
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://sentinel:sentinel@postgres:5432/sentinel
+      - CORS_ORIGINS=http://localhost:3000
+    depends_on:
+      - agents
+      - redis
+      - postgres
+    networks:
+      - sentinel
+
+  # React Web UI
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_WS_URL=ws://localhost:8000/ws
+    depends_on:
+      - api
+    networks:
+      - sentinel
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=sentinel
+      - POSTGRES_PASSWORD=sentinel
+      - POSTGRES_DB=sentinel
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - sentinel
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - sentinel
+
+  # Prometheus (Metrics)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - sentinel
+
+  # Grafana (Dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - sentinel
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  sentinel:
+    driver: bridge
