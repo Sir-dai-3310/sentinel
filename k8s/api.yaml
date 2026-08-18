@@ -23,6 +23,10 @@ spec:
       containers:
         - name: api
           image: sentinel/api:1.0.0
+          securityContext:
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

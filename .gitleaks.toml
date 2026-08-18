@@ -1,0 +1,13 @@
+title = "Sentinel gitleaks config"
+
+# Extends the default gitleaks ruleset; only adds project-specific allowlists.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented dummy/placeholder values only"
+paths = [
+  # k8s/secret.yaml contains only base64("changeme") placeholders, documented
+  # in-file as dev placeholders to be replaced by sealed-secrets in real clusters.
+  '''^k8s/secret\.yaml$''',
+]

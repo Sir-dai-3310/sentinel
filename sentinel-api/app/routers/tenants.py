@@ -19,7 +19,11 @@ _SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,62}$")
 class TenantCreate(BaseModel):
     """Payload for creating a tenant."""
 
-    slug: str = Field(..., description="URL-safe tenant id, e.g. acme-corp")
+    slug: str = Field(
+        ...,
+        pattern=_SLUG_RE.pattern,
+        description="URL-safe tenant id, e.g. acme-corp",
+    )
     name: str = Field(..., min_length=1, max_length=255)
     max_requests_per_minute: int = 0
     max_analyses_per_day: int = 0

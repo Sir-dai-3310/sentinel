@@ -29,6 +29,16 @@ Cargo.lock.bak
 **/*.rs.bk
 *.pdb
 
+# Signing keys — never commit private keys (see docs/security/secret-scan-report.md)
+sbom/cosign.key
+**/cosign.key
+*.pem
+*.key
+
+# Security-scan runtime artifacts
+.schemathesis/
+sentinel-api/rules/
+
 # Node
 node_modules/
 npm-debug.log*

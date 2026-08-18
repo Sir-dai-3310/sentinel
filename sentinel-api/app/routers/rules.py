@@ -1,12 +1,13 @@
 """Rules management endpoints with full CRUD."""
 
 import os
+import re
 from pathlib import Path
 from typing import Any
 
 import yaml
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.auth.jwt import User, require_auth
 
@@ -14,11 +15,14 @@ router = APIRouter(dependencies=[Depends(require_auth)])
 
 RULES_DIR = Path(os.getenv("RULES_DIR", "rules"))
 
+# Rule IDs become filenames — restrict to safe characters (covers Sigma UUIDs and R### style).
+RULE_ID_PATTERN = r"^[A-Za-z0-9_-]+$"
+
 
 class Rule(BaseModel):
     """Sigma rule."""
 
-    id: str
+    id: str = Field(pattern=RULE_ID_PATTERN)
     title: str
     description: str | None = None
     level: str = "medium"
@@ -103,7 +107,8 @@ async def create_rule(rule: Rule) -> dict[str, str]:
         for tag in rule.tags:
             if tag.startswith("attack."):
                 tactic = tag.split(".")[1] if len(tag.split(".")) > 1 else "custom"
-                category = tactic
+                # Sanitize: category becomes a directory name under RULES_DIR.
+                category = re.sub(r"[^A-Za-z0-9_-]", "", tactic) or "custom"
                 break
 
     # Create rule file

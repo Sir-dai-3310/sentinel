@@ -11,6 +11,8 @@ from pydantic import BaseModel
 
 # JWT Configuration
 SECRET_KEY = os.getenv("JWT_SECRET", "CHANGE_THIS_IN_PRODUCTION")
+if os.getenv("ENVIRONMENT") == "production" and SECRET_KEY == "CHANGE_THIS_IN_PRODUCTION":
+    raise ValueError("JWT_SECRET must be set in production (default value is insecure)")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "60"))
 
