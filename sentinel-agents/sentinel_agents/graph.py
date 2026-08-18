@@ -110,4 +110,8 @@ async def analyze_log(log: dict) -> IncidentState:
     initial_state = IncidentState(log=processed)
 
     final_state = await graph.ainvoke(initial_state)
+    # langgraph 1.x returns the state as a plain dict; re-validate so callers
+    # get a real IncidentState with model methods (e.g. .verdict.model_dump()).
+    if isinstance(final_state, dict):
+        final_state = IncidentState.model_validate(final_state)
     return final_state

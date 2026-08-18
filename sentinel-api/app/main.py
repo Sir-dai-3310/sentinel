@@ -10,7 +10,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.i18n import localize_error_body, negotiate_locale
 from app.retention import start_retention_task, stop_retention_task
-from app.routers import analysis, rules, health, logs, privacy, stats, settings, tenants
+from app.routers import analysis, auth, rules, health, logs, privacy, stats, settings, tenants
 from app.security import SecurityHeadersMiddleware, RateLimitMiddleware
 from app.websocket import manager
 
@@ -27,10 +27,36 @@ async def lifespan(app: FastAPI):
     print("🛑 Sentinel API shutting down...")
 
 
+OPENAPI_TAGS = [
+    {"name": "auth", "description": "Authentication — exchange credentials for a JWT access token."},
+    {"name": "health", "description": "Liveness/readiness health checks."},
+    {"name": "analysis", "description": "AI-powered log analysis (single and batch)."},
+    {"name": "logs", "description": "Bulk log import with async task tracking."},
+    {"name": "rules", "description": "Sigma rule management (CRUD and reload)."},
+    {"name": "stats", "description": "Dashboard statistics and LLM cost tracking."},
+    {"name": "settings", "description": "Runtime settings (sanitized, no secrets)."},
+    {"name": "tenants", "description": "Multi-tenant management (admin only)."},
+    {"name": "privacy", "description": "GDPR/CCPA data-subject rights: export and erasure (admin only)."},
+]
+
+
 app = FastAPI(
     title="Sentinel API",
-    description="AI-powered security log analysis platform",
-    version="1.0.0",
+    description=(
+        "AI-powered security log analysis platform.\n\n"
+        "Authenticate via `POST /api/v1/auth/login` to obtain a JWT, then send it "
+        "as `Authorization: Bearer <token>` on all subsequent requests. "
+        "See the [Python SDK and CLI](https://github.com/sentinel-project/sentinel) "
+        "for programmatic access."
+    ),
+    version="1.2.0",
+    contact={
+        "name": "Sentinel Project",
+        "url": "https://github.com/sentinel-project/sentinel",
+        "email": "security@sentinel.dev",
+    },
+    license_info={"name": "Apache-2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0"},
+    openapi_tags=OPENAPI_TAGS,
     lifespan=lifespan,
 )
 
@@ -43,10 +69,24 @@ instrumentator = Instrumentator(
     inprogress_name="sentinel_requests_inprogress",
     inprogress_labels=True,
 )
-instrumentator.instrument(app).expose(app, endpoint="/metrics", include_in_schema=True)
+instrumentator.instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
 
 # Security headers middleware
 app.add_middleware(SecurityHeadersMiddleware)
+
+
+def _response_headers(response) -> dict:
+    """Copy upstream headers, dropping stale framing headers.
+
+    The rewritten JSON body differs in length from the original, so a copied
+    Content-Length would corrupt the response (h11 LocalProtocolError /
+    truncated bodies). JSONResponse recomputes it.
+    """
+    return {
+        k: v
+        for k, v in response.headers.items()
+        if k.lower() not in ("content-length", "content-encoding", "transfer-encoding")
+    }
 
 
 @app.middleware("http")
@@ -72,7 +112,7 @@ async def i18n_error_middleware(request, call_next):
         return JSONResponse(
             status_code=response.status_code,
             content=body_bytes.decode("utf-8", errors="replace"),
-            headers=dict(response.headers),
+            headers=_response_headers(response),
         )
 
     locale = negotiate_locale(request.headers.get("accept-language"))
@@ -80,7 +120,7 @@ async def i18n_error_middleware(request, call_next):
     return JSONResponse(
         status_code=response.status_code,
         content=localized,
-        headers=dict(response.headers),
+        headers=_response_headers(response),
     )
 
 # Rate limiting middleware (100 requests per 60 seconds per IP)
@@ -102,6 +142,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router, prefix="/api/v1", tags=["auth"])
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
 app.include_router(analysis.router, prefix="/api/v1", tags=["analysis"])
 app.include_router(logs.router, prefix="/api/v1", tags=["logs"])

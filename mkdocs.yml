@@ -69,7 +69,10 @@ nav:
   - Reference:
       - REST API: api.md
       - Python API Reference: api-reference.md
+      - Python SDK: sdks/python.md
+      - CLI: cli.md
   - Guides:
+      - Development Environment: development.md
       - Multi-Tenancy: multi-tenancy.md
       - Plugin Development: plugins.md
       - Plugin Marketplace: plugin-marketplace.md
