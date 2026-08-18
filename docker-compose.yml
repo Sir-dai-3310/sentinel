@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.core
+    restart: unless-stopped
     ports:
       - "50051:50051"  # gRPC
     volumes:
@@ -11,11 +12,19 @@ services:
     environment:
       - RUST_LOG=info
       - RULES_DIR=/app/rules
+    healthcheck:
+      # gRPC has no HTTP endpoint; a TCP connect to 50051 proves the listener is up.
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/50051' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     networks:
       - sentinel
 
   # Python AI Agents
   agents:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: docker/Dockerfile.agents
@@ -29,15 +38,26 @@ services:
       - CORE_GRPC_URL=core:50051
       - REDIS_URL=redis://redis:6379
       - DATABASE_URL=postgresql://sentinel:sentinel@postgres:5432/sentinel
+    healthcheck:
+      # gRPC server on 50052 (python slim image: use a python TCP probe).
+      test: ["CMD-SHELL", "python -c \"import socket,sys; s=socket.socket(); s.settimeout(3); s.connect(('localhost',50052)); s.close()\" || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     depends_on:
-      - core
-      - redis
-      - postgres
+      core:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     networks:
       - sentinel
 
   # FastAPI Backend
   api:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: docker/Dockerfile.api
@@ -48,30 +68,49 @@ services:
       - REDIS_URL=redis://redis:6379
       - DATABASE_URL=postgresql://sentinel:sentinel@postgres:5432/sentinel
       - CORS_ORIGINS=http://localhost:3000
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     depends_on:
-      - agents
-      - redis
-      - postgres
+      agents:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     networks:
       - sentinel
 
   # React Web UI
   web:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: docker/Dockerfile.web
     ports:
-      - "3000:3000"
+      - "3000:80"
     environment:
       - REACT_APP_API_URL=http://localhost:8000
       - REACT_APP_WS_URL=ws://localhost:8000/ws
+    healthcheck:
+      # nginx:alpine serves on container port 80; wget is present in alpine.
+      test: ["CMD-SHELL", "wget -qO- http://localhost:80/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     networks:
       - sentinel
 
   # PostgreSQL Database
   postgres:
+    restart: unless-stopped
     image: postgres:16-alpine
     environment:
       - POSTGRES_USER=sentinel
@@ -81,32 +120,53 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinel -d sentinel"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - sentinel
 
   # Redis Cache & Queue
   redis:
+    restart: unless-stopped
     image: redis:7-alpine
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     networks:
       - sentinel
 
   # Prometheus (Metrics)
   prometheus:
+    restart: unless-stopped
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
     volumes:
       - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9090/-/healthy >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - sentinel
 
   # Grafana (Dashboards)
   grafana:
+    restart: unless-stopped
     image: grafana/grafana:latest
     ports:
       - "3001:3000"
@@ -115,8 +175,15 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     depends_on:
-      - prometheus
+      prometheus:
+        condition: service_healthy
     networks:
       - sentinel
 

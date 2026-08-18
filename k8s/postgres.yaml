@@ -1,0 +1,109 @@
+# PostgreSQL as a StatefulSet with a PVC template for durable storage.
+# For production consider an external/managed Postgres or an operator (see
+# docs/disaster-recovery.md); this manifest provides a self-contained dev/default.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sentinel-postgres
+  namespace: sentinel
+  labels:
+    app.kubernetes.io/name: sentinel-postgres
+    app.kubernetes.io/component: postgres
+    app.kubernetes.io/part-of: sentinel
+spec:
+  serviceName: sentinel-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sentinel-postgres
+      app.kubernetes.io/component: postgres
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sentinel-postgres
+        app.kubernetes.io/component: postgres
+        app.kubernetes.io/part-of: sentinel
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: sentinel-config
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sentinel-credentials
+                  key: POSTGRES_PASSWORD
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - sentinel
+                - -d
+                - sentinel
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - sentinel
+                - -d
+                - sentinel
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+              subPath: pgdata
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app.kubernetes.io/name: sentinel-postgres
+          app.kubernetes.io/part-of: sentinel
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentinel-postgres
+  namespace: sentinel
+  labels:
+    app.kubernetes.io/name: sentinel-postgres
+    app.kubernetes.io/component: postgres
+    app.kubernetes.io/part-of: sentinel
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: sentinel-postgres
+    app.kubernetes.io/component: postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+      protocol: TCP

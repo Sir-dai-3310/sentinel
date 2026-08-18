@@ -1,0 +1,24 @@
+# Non-sensitive configuration shared by api / agents.
+# Credentials MUST come from Secrets (created out-of-band), never from this file.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sentinel-config
+  namespace: sentinel
+  labels:
+    app.kubernetes.io/name: sentinel
+    app.kubernetes.io/part-of: sentinel
+data:
+  # api -> agents gRPC
+  AGENTS_GRPC_URL: "sentinel-agents:50052"
+  CORE_GRPC_URL: "sentinel-core:50051"
+  CORS_ORIGINS: "http://localhost:3000"
+  # Postgres / Redis service endpoints (credentials live in the Secret)
+  POSTGRES_HOST: "sentinel-postgres"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "sentinel"
+  POSTGRES_USER: "sentinel"
+  REDIS_HOST: "sentinel-redis"
+  REDIS_PORT: "6379"
+  RUST_LOG: "info"
+  RULES_DIR: "/app/rules"
