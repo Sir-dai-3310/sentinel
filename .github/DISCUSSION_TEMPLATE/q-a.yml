@@ -1,0 +1,32 @@
+title: "❓ "
+labels: ["needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ask a question about using or deploying Sentinel. For bugs, please use [Issues](https://github.com/yourusername/sentinel/issues) instead.
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: Be specific. Include what you tried and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Environment
+      description: OS, deployment method (docker-compose / k8s / helm), Sentinel version, relevant config (redact secrets!).
+      placeholder: |
+        - OS: Ubuntu 24.04
+        - Deploy: docker-compose
+        - Version: v1.2
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or output
+      render: shell
+    validations:
+      required: false

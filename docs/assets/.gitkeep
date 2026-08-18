@@ -1,0 +1,2 @@
+Demo assets live here. Generate the CLI demo with scripts/record-demo.sh
+(requires asciinema + agg or svg-term-cli — not available in all environments).

@@ -81,12 +81,36 @@ pytest
 npm test
 ```
 
+## Commit Convention
+
+We use [Conventional Commits](https://www.conventionalcommits.org/) enforced by [commitlint](https://commitlint.js.org/) (see `commitlint.config.js`).
+
+Format: `<type>(<optional scope>): <description>`
+
+Common types: `feat`, `fix`, `docs`, `perf`, `refactor`, `test`, `build`, `ci`, `chore`, `revert`.
+
+Examples:
+
+```
+feat(api): add tenant-scoped audit log export
+fix(rules): handle malformed Sigma YAML without crashing
+perf(core): batch Sigma evaluation for 14k EPS
+```
+
+To get the template locally:
+
+```bash
+git config commit.template .gitmessage
+```
+
+`CHANGELOG.md` is generated from these subjects by `scripts/generate-changelog.py` — please keep subjects accurate.
+
 ## Pull Request Process
 
 1. **Update documentation** if you changed APIs
 2. **Add tests** for new features
 3. **Ensure all tests pass** (`cargo test && pytest && npm test`)
-4. **Update CHANGELOG.md** with your changes
+4. **Follow the commit convention** above — `CHANGELOG.md` is generated from commit subjects
 5. **Request review** from maintainers
 
 ## Code Review

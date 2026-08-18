@@ -1,0 +1,28 @@
+title: "🎉 "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Show the community what you built with Sentinel — deployments, plugins, dashboards, detections, integrations.
+  - type: textarea
+    id: what
+    attributes:
+      label: What did you build?
+      description: Tell us what it does and why it's useful.
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Links, screenshots, repo, demo, architecture notes.
+    validations:
+      required: false
+  - type: checkboxes
+    id: share
+    attributes:
+      label: Sharing
+      options:
+        - label: Maintainers may feature this in the README / docs / release notes
+          required: false

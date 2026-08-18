@@ -1,0 +1,44 @@
+title: "💡 "
+labels: ["type/feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing an idea! Ideas here are discussed openly before becoming feature requests or roadmap items.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What problem does this solve?
+      description: Describe the pain point or opportunity, not just the solution you have in mind.
+      placeholder: "When I …, I can't …"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed idea
+      description: What would you like Sentinel to do?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area does this touch?
+      options:
+        - Core (Rust engine)
+        - Agents (AI pipeline)
+        - API
+        - Web UI
+        - Rules / detection content
+        - Infrastructure / deployment
+        - Documentation
+        - Not sure
+    validations:
+      required: true
+  - type: checkboxes
+    id: willing
+    attributes:
+      label: Contribution
+      options:
+        - label: I'd be willing to help implement this
+          required: false

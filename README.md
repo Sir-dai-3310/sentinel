@@ -2,11 +2,19 @@
 
 > **The first open-source, AI-native Security Operations Center (SOC) platform**
 
+**English** | [简体中文](README_CN.md)
+
+[![CI](https://img.shields.io/github/actions/workflow/status/yourusername/sentinel/ci.yml?branch=main&label=CI)](https://github.com/yourusername/sentinel/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/codecov/c/github/yourusername/sentinel)](https://codecov.io/gh/yourusername/sentinel)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![Rust](https://img.shields.io/badge/Rust-1.70+-orange.svg)](https://rust-lang.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-90%25%20coverage-brightgreen.svg)](tests/)
 [![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)](docker/)
+[![Release](https://img.shields.io/github/v/release/yourusername/sentinel)](https://github.com/yourusername/sentinel/releases)
+[![Contributors](https://img.shields.io/github/contributors/yourusername/sentinel)](https://github.com/yourusername/sentinel/graphs/contributors)
+[![Stars](https://img.shields.io/github/stars/yourusername/sentinel?style=social)](https://github.com/yourusername/sentinel/stargazers)
+[![Docs](https://img.shields.io/badge/docs-mkdocs-blue)](https://yourusername.github.io/sentinel/)
 
 ---
 
@@ -123,6 +131,8 @@ results = await agg.lookup_ip("1.2.3.4")
 
 ### 4. Modern Web UI
 
+<!-- Demo asset: generated with scripts/record-demo.sh (agg/svg-term-cli) → docs/assets/demo.svg -->
+<!-- Placeholder until a recorded demo is committed: -->
 ![Sentinel Dashboard](docs/assets/dashboard.gif)
 
 - 📊 Real-time dashboard (WebSocket streaming)
@@ -135,11 +145,16 @@ results = await agg.lookup_ip("1.2.3.4")
 
 ## 📖 Documentation
 
+**📚 Docs site**: [yourusername.github.io/sentinel](https://yourusername.github.io/sentinel/) (versioned via mike)
+
 - [Quickstart Guide](docs/quickstart.md)
 - [Architecture Deep Dive](docs/architecture.md)
-- [API Reference](docs/api.md)
-- [Plugin Development](docs/plugins.md)
-- [Contributing](docs/contributing.md)
+- [REST API Reference](docs/api.md) · [Python API Reference](docs/api-reference.md)
+- [Multi-Tenancy](docs/multi-tenancy.md) · [Security](docs/security.md) · [Performance](docs/performance.md)
+- [Plugin Development](docs/plugins.md) · [Plugin Marketplace (design)](docs/plugin-marketplace.md)
+- [Contributing](docs/contributing.md) · [Translations](docs/translations.md) · [Labels](docs/labels.md)
+- [Enterprise](docs/enterprise.md) · [License Rationale](docs/license-rationale.md) · [Whitepaper](docs/whitepaper.md)
+- [Architecture Decision Records](docs/adr/)
 
 ---
 

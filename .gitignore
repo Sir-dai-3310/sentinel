@@ -58,6 +58,9 @@ docker-compose.override.yml
 *.log
 logs/
 
+# MkDocs build output
+site/
+
 # Database
 *.db
 *.sqlite
