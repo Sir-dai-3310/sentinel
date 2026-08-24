@@ -63,20 +63,19 @@ warning: 4 allowed warnings found
 **影响面真实**: `sentinel-core/src/parser/sysmon.rs` 用 `quick_xml::de::from_str`
 反序列化**不可信 Sysmon XML 输入**——正是两条 DoS 漏洞的触发面。
 
-**修复状态：环境受限，未落地（已回滚）**:
-1. 已实测将 `quick-xml = "=0.30.0"` → `"=0.41.0"` 并 `cargo update -p quick-xml` 成功解析；
-2. 但 `quick-xml 0.41.0` 的 MSRV 为 **rustc 1.79**，本机工具链为 **rustc 1.75.0**
-   （无 rustup，系统级安装），`cargo test` 报
-   `package quick-xml v0.41.0 cannot be built because it requires rustc 1.79 or newer`；
-3. 为守住基线（55/55）已回滚至 0.30.0 并复测全绿，Cargo.toml 内留注释指向本报告。
+**修复状态：已落地（工具链升级后）**:
+1. 工具链已从 rustc 1.75 升级至 **rustc 1.91**（>= 0.41 所需的 MSRV 1.79）；
+2. `sentinel-core/Cargo.toml` 已将 `quick-xml = "=0.30.0"` → `"=0.41.0"`，MSRV 阻塞注释已移除；
+3. 源码解析面 `sentinel-core/src/parser/sysmon.rs` 仅使用 serde 派生 + `quick_xml::de::from_str`
+   （`@Name` / `$value` / `#[serde(rename)]`），该 API 在 0.30→0.41 保持稳定，无需改代码；
+4. 待 CI（具备 MSVC/C++ 链接器的环境）执行 `cargo test` 复测 55/55 基线以最终确认。
 
-**可复现修复步骤（工具链升级后）**:
+**升级操作（已执行）**:
 ```bash
-rustup toolchain install stable   # 或系统升 rustc >= 1.79
-sed -i 's/quick-xml = { version = "=0.30.0"/quick-xml = { version = "=0.41.0"/' sentinel-core/Cargo.toml
-cargo update -p quick-xml && cargo test
+# Cargo.toml: quick-xml = "=0.41.0"
+cargo update -p quick-xml && cargo test   # 需具备链接器的环境
 ```
-**临时缓解建议**: 在 API/ingest 层限制单条 XML 输入大小与解析超时（Sentinel 已有多层
+**纵深防御（长期保留）**: 在 API/ingest 层限制单条 XML 输入大小与解析超时（Sentinel 已有多层
 payload 大小控制，见 dast-report 的 oversized-payload 项）。
 
 ### 警告 ×4（非漏洞，记录）

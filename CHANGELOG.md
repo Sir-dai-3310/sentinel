@@ -6,7 +6,118 @@ using [Conventional Commits](https://www.conventionalcommits.org/).
 
 ## [Unreleased]
 
-### Other
+### Security
+
+- **fix(api): close the "protection built but never wired" gaps** (batch 5,
+  all evidence-backed P0/P1):
+  - Fail-closed environment handling: the default JWT secret now refuses to
+    start outside explicitly local modes (`ENVIRONMENT` unset/typo'd no
+    longer silently disables guards). New `app/env.py::is_local_mode`.
+  - Login hardening: constant-time password compare, login audit events
+    (the AuditLogger existed but was never called), and the `admin`/`admin`
+    bootstrap default is rejected outside local mode.
+  - RBAC actually mounted: rules write ops & reload are admin-only,
+    analysis requires analyst+; the two parallel role systems (JWT roles vs
+    username-env mapping) are unified onto JWT roles.
+  - WebSocket `/ws/analysis` now requires a JWT (header or `?token=`),
+    rejects with close code 4401, and applies a per-connection 30 msg/60s
+    rate limit (previously fully unauthenticated & rate-limit-free LLM access).
+  - Rate limiter no longer trusts client-forgeable `X-Forwarded-For`
+    unconditionally; honour it only behind `TRUSTED_PROXY_COUNT` hops.
+  - Global 500 handler returns a generic message + `request_id` instead of
+    leaking `str(exc)`; details go to server logs.
+  - Batch analyze capped (`max_length=100` → 422) with bounded concurrency
+    (`Semaphore(10)`); `verify_token` returns 401 (not 500) on missing
+    claims; `get_api_key` no longer accepts blank bearer when API_KEYS unset.
+- **feat(web): real authentication** — new `src/api/client.ts` (bearer
+  injection + 401 redirect), a `/login` page, logout button, 404 route, and
+  5-locale login strings. All 9 API call sites migrated to same-origin
+  relative paths (the 8 hardcoded `http://localhost:8000` literals pointed
+  at the *user's* machine in production builds). Removed unused
+  zustand/clsx/tailwind-merge deps; react-query `queryFn`s now honour
+  AbortSignals.
+- **fix(web): WebSocket reconnect storm** — handler refs stabilize the
+  connection (inline callbacks previously tore it down every render), manual
+  close flag prevents ghost reconnects after unmount, exponential backoff
+  (5s→60s cap).
+
+### Refactoring
+
+- **refactor(agents): deduplicate shared utilities** — extracted
+  `utils/dotpath.py` (`get_path`/`set_path`) replacing two verbatim copies in
+  masking & preprocessing; extracted `utils/yamlutil.py` (`load_mapping`)
+  replacing three copies of the open+safe_load+validate YAML boilerplate;
+  hoisted the six identical `chat`/`chat_structured` implementations from the
+  OpenAI/Anthropic/Ollama providers into the `LLMProvider` base class.
+- **refactor(api): deduplicate rules router directory scans** — the
+  `rglob+open+safe_load` pattern was repeated across list/get/update/delete;
+  now shared via `_iter_rule_files`/`_load_rule_file`/`_find_rule_file_by_id`.
+
+### Architecture
+
+- **feat(core): wire up the Rust Sigma engine via PyO3** — the engine was fully
+  implemented but never called at runtime (`engine.evaluate` was commented out;
+  Cargo had no pyo3 dependency/feature). Added the `pyo3` optional dep + feature,
+  exposed `evaluate`/`evaluate_batch`/`rule_count` to Python (Bound API), and a
+  maturin `pyproject.toml`. Triage now evaluates the full `rules/` set in parallel
+  instead of 2 hard-coded Python rules, with the Python fallback retained.
+- **fix(deploy): repair the crashing container topology** — the compose/k8s setup
+  described a gRPC 4-microservice layout that does not exist in code (real design
+  is in-process: web → api(+agents+core) → postgres/redis). Rebuilt `Dockerfile.api`
+  (multi-stage: maturin-build core wheel + bundle agents), fixed `Dockerfile.agents`
+  CMD to the real `sentinel_agents.streaming` Kafka consumer, removed the dead
+  `Dockerfile.core`, dropped the fake gRPC services/probes from compose & k8s, and
+  aligned `docs/architecture.md` with the real communication model.
+
+### Security
+
+- deps(core): upgrade `quick-xml` 0.30.0 → 0.41.0, fixing RUSTSEC-2026-0194
+  and RUSTSEC-2026-0195 (two High/7.5 DoS in untrusted Sysmon XML parsing)
+- deps(core): upgrade `tokio` 1.35.0 → 1.44.2 (clears RUSTSEC-2025-0023 unsound)
+  and `anyhow` 1.0.75 → 1.0.98 (clears `downcast_mut` unsound)
+- deps(web): bump `axios` ^1.6 → ^1.7.9
+
+### Fixed
+
+- ci(release): stop overwriting the repository `CHANGELOG.md`; release notes now
+  render from a temporary `RELEASE_NOTES.md`
+- web(test): fix fatal test-tooling mismatch — align `@vitest/coverage-v8` to
+  vitest 4, add missing `jsdom` env + `setupTests.ts`, so unit tests can run
+
+### Changed
+
+- deps(agents): align `pyproject.toml` version constraints with the actually
+  shipped runtime (langgraph 1.x, langchain 1.x, openai 3.x, pydantic 2.13,
+  httpx 0.28, tenacity 9) and declare previously-implicit deps (reportlab,
+  aiokafka, pyyaml)
+- deps(api): add first-class `pyproject.toml` (previously had no dependency
+  manifest), pinning fastapi/starlette/uvicorn/sqlalchemy/alembic/etc.
+- web(deps): remove unused/deprecated `react-flow-renderer` and `recharts`;
+  move test libs and `@types/node` to devDependencies; `@vitejs/plugin-react` → ^5
+- chore(version): unify component versions to 1.2.0 (core, agents, web)
+- docs: replace `yourusername` placeholder with `sentinel-project`; fix stale
+  README badges (Rust MSRV 1.79+, drop static coverage badge)
+- refactor(agents): migrate pydantic `class Config` → `model_config = ConfigDict`
+
+### CI / Build
+
+- ci: api job installs from its new `pyproject.toml` (was untracked `pip install
+  fastapi[all]`) and gains ruff + mypy; add a dedicated **SDK test job**
+- ci: unify action versions (cache@v4, setup-python@v5, codecov@v4,
+  action-gh-release@v2) and add a **Rust MSRV (1.79) build job**
+- ci(release): replace `curl | sh` syft install with `anchore/sbom-action@v0`
+- build(web): migrate to **ESLint 9 flat config** (`eslint.config.js`),
+  @typescript-eslint 6 → 8, add the missing `eslint` core dependency
+- build(docker): `Dockerfile.api` installs from `pyproject.toml` (reproducible)
+- chore(helm): align Chart `version`/`appVersion` and image tags to 1.2.0
+- chore(deps): dependabot now covers `/sdk` and applies a 7-day cooldown
+- chore(pre-commit): give the eslint hook flat-config `additional_dependencies`
+- deps(core): bump low-risk crates (serde 1.0.219, serde_json 1.0.140,
+  serde_yaml 0.9.34, regex 1.11.1, rayon 1.10, thiserror 1.0.69,
+  parking_lot 0.12.3, walkdir 2.5, once_cell 1.20.2)
+- chore(license): unify SDK license Apache-2.0 → MIT; align SECURITY.md table
+
+
 
 - baseline: v1.4 state before v1.2 deep-enhancement round (`e59e997`)
 - baseline: v1.3 actual state (rust 55t, py 90% cov, api 21t) (`6438c88`)

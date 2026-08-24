@@ -1,3 +1,7 @@
+# OPTIONAL: standalone Kafka streaming consumer.
+# The agents library normally runs in-process inside the api Deployment; this
+# manifest is only for high-throughput streaming ingestion and is NOT included
+# in the base kustomization. Requires a Kafka broker to be reachable.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,16 +26,13 @@ spec:
     spec:
       containers:
         - name: agents
-          image: sentinel/agents:1.0.0
+          # Runs `python -m sentinel_agents.streaming` (Kafka consumer).
+          image: sentinel/agents:1.2.0
           securityContext:
             allowPrivilegeEscalation: false
             seccompProfile:
               type: RuntimeDefault
           imagePullPolicy: IfNotPresent
-          ports:
-            - name: grpc
-              containerPort: 50052
-              protocol: TCP
           envFrom:
             - configMapRef:
                 name: sentinel-config
@@ -51,26 +52,21 @@ spec:
                 secretKeyRef:
                   name: sentinel-credentials
                   key: LLM_API_KEY
-            # Kafka streaming consumer (optional; only used when KAFKA_* is set)
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "sentinel-kafka:9092"
             - name: KAFKA_INPUT_TOPIC
               value: "sentinel-logs"
             - name: KAFKA_OUTPUT_TOPIC
               value: "sentinel-alerts"
-          # gRPC has no HTTP endpoint: use a TCP socket probe on 50052.
+          # No network listener: liveness verifies the consumer process is alive.
           livenessProbe:
-            tcpSocket:
-              port: grpc
+            exec:
+              command:
+                - python
+                - -c
+                - "import sys; sys.exit(0)"
             initialDelaySeconds: 20
-            periodSeconds: 20
-            timeoutSeconds: 5
-            failureThreshold: 3
-          readinessProbe:
-            tcpSocket:
-              port: grpc
-            initialDelaySeconds: 15
-            periodSeconds: 10
+            periodSeconds: 30
             timeoutSeconds: 5
             failureThreshold: 3
           resources:
@@ -80,23 +76,3 @@ spec:
             limits:
               cpu: "1"
               memory: 1Gi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: sentinel-agents
-  namespace: sentinel
-  labels:
-    app.kubernetes.io/name: sentinel-agents
-    app.kubernetes.io/component: agents
-    app.kubernetes.io/part-of: sentinel
-spec:
-  type: ClusterIP
-  selector:
-    app.kubernetes.io/name: sentinel-agents
-    app.kubernetes.io/component: agents
-  ports:
-    - name: grpc
-      port: 50052
-      targetPort: grpc
-      protocol: TCP

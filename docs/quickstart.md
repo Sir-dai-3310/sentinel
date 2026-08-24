@@ -1,4 +1,4 @@
-# Quickstart Guide
+﻿# Quickstart Guide
 
 Get Sentinel up and running in 5 minutes.
 
@@ -11,7 +11,7 @@ Get Sentinel up and running in 5 minutes.
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/yourusername/sentinel.git
+git clone https://github.com/sentinel-project/sentinel.git
 cd sentinel
 
 # 2. Configure environment
@@ -136,6 +136,6 @@ Make sure the `rules/` directory exists and contains `.yml` files.
 
 ## Getting Help
 
-- [GitHub Issues](https://github.com/yourusername/sentinel/issues)
+- [GitHub Issues](https://github.com/sentinel-project/sentinel/issues)
 - [Discord](https://discord.gg/sentinel)
 - [Documentation](https://docs.sentinel.dev)

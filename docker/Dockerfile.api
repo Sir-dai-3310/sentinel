@@ -1,34 +1,46 @@
-# Sentinel API - FastAPI Backend
+# Sentinel API - FastAPI backend (bundles the sentinel_agents library and the
+# maturin-built Rust sentinel_core engine, matching the real in-process
+# architecture: web -> api(+agents+core) -> postgres/redis).
+
+# ---- Stage 1: build the Rust core into a Python wheel via maturin ----
+FROM rust:1.83-slim AS core-builder
+WORKDIR /build
+RUN apt-get update && apt-get install -y python3 python3-pip python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir --break-system-packages maturin
+COPY sentinel-core /build/sentinel-core
+COPY rules /build/rules
+WORKDIR /build/sentinel-core
+# Build an abi3 wheel with the pyo3 feature enabled (see pyproject.toml).
+RUN maturin build --release --features pyo3 --out /wheels
+
+# ---- Stage 2: runtime image ----
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
 RUN groupadd -r sentinel && useradd -r -g sentinel sentinel
 
-# Copy API project
+# Install the Rust core engine wheel (provides `import sentinel_core`)
+COPY --from=core-builder /wheels /wheels
+RUN pip install --no-cache-dir /wheels/*.whl
+
+# Install the agents library (the API imports sentinel_agents at runtime)
+COPY sentinel-agents /app/sentinel-agents
+RUN pip install --no-cache-dir ./sentinel-agents
+
+# Copy and install the API project
 COPY sentinel-api /app
+COPY rules /app/rules
+RUN pip install --no-cache-dir .
 
-# Install dependencies
-RUN pip install --no-cache-dir \
-    fastapi[all] \
-    uvicorn[standard] \
-    gunicorn \
-    redis \
-    psycopg2-binary \
-    websockets \
-    prometheus-fastapi-instrumentator
-
-# Set ownership to non-root user
 RUN chown -R sentinel:sentinel /app
 
-# Switch to non-root user
 USER sentinel
 
 EXPOSE 8000

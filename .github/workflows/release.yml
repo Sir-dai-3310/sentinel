@@ -1,4 +1,4 @@
-name: Release
+﻿name: Release
 
 on:
   push:
@@ -16,13 +16,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Syft
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+      - name: Generate SPDX SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: sbom.spdx.json
 
-      - name: Generate SBOM
-        run: |
-          syft . -o spdx-json=sbom.spdx.json -o cyclonedx-json=sbom.cyclonedx.json
+      - name: Generate CycloneDX SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom.cyclonedx.json
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
@@ -58,33 +64,13 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
-      - name: Build and push core
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./docker/Dockerfile.core
-          push: true
-          tags: ghcr.io/${{ github.repository }}/core:${{ steps.version.outputs.VERSION }}
-          provenance: true
-          sbom: true
-
-      - name: Build and push api
+      - name: Build and push api (bundles Rust core + agents in-process)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./docker/Dockerfile.api
           push: true
           tags: ghcr.io/${{ github.repository }}/api:${{ steps.version.outputs.VERSION }}
-          provenance: true
-          sbom: true
-
-      - name: Build and push agents
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./docker/Dockerfile.agents
-          push: true
-          tags: ghcr.io/${{ github.repository }}/agents:${{ steps.version.outputs.VERSION }}
           provenance: true
           sbom: true
 
@@ -116,18 +102,20 @@ jobs:
       - name: Generate changelog
         id: changelog
         run: |
-          # Generate changelog from git log
+          # Generate release notes into a temp file (do NOT overwrite the
+          # repository's CHANGELOG.md, which is maintained by
+          # scripts/generate-changelog.py from Conventional Commits).
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
           if [ -z "$PREV_TAG" ]; then
-            git log --pretty=format:"- %s (%h)" --no-merges > CHANGELOG.md
+            git log --pretty=format:"- %s (%h)" --no-merges > RELEASE_NOTES.md
           else
-            git log --pretty=format:"- %s (%h)" --no-merges ${PREV_TAG}..HEAD > CHANGELOG.md
+            git log --pretty=format:"- %s (%h)" --no-merges ${PREV_TAG}..HEAD > RELEASE_NOTES.md
           fi
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          body_path: CHANGELOG.md
+          body_path: RELEASE_NOTES.md
           files: |
             sbom.spdx.json
             sbom.cyclonedx.json

@@ -1,61 +1,8 @@
 services:
-  # Rust Core Engine
-  core:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.core
-    restart: unless-stopped
-    ports:
-      - "50051:50051"  # gRPC
-    volumes:
-      - ./rules:/app/rules
-    environment:
-      - RUST_LOG=info
-      - RULES_DIR=/app/rules
-    healthcheck:
-      # gRPC has no HTTP endpoint; a TCP connect to 50051 proves the listener is up.
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/50051' || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 15s
-    networks:
-      - sentinel
-
-  # Python AI Agents
-  agents:
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.agents
-    environment:
-      - LLM_API_KEY=${LLM_API_KEY}
-      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.openai.com/v1}
-      - LLM_MODEL=${LLM_MODEL:-gpt-4-turbo-preview}
-      - VT_API_KEY=${VT_API_KEY}
-      - SHODAN_API_KEY=${SHODAN_API_KEY}
-      - ABUSEIPDB_API_KEY=${ABUSEIPDB_API_KEY}
-      - CORE_GRPC_URL=core:50051
-      - REDIS_URL=redis://redis:6379
-      - DATABASE_URL=postgresql://sentinel:sentinel@postgres:5432/sentinel
-    healthcheck:
-      # gRPC server on 50052 (python slim image: use a python TCP probe).
-      test: ["CMD-SHELL", "python -c \"import socket,sys; s=socket.socket(); s.settimeout(3); s.connect(('localhost',50052)); s.close()\" || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
-    depends_on:
-      core:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-    networks:
-      - sentinel
-
-  # FastAPI Backend
+  # FastAPI Backend (bundles the sentinel_agents orchestration library and the
+  # maturin-built Rust sentinel_core engine — see docs/architecture.md).
+  # NOTE: the Rust core and the agents run IN-PROCESS inside this service; they
+  # are libraries, not separate gRPC microservices.
   api:
     restart: unless-stopped
     build:
@@ -64,19 +11,25 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - AGENTS_GRPC_URL=agents:50052
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.openai.com/v1}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4-turbo-preview}
+      - VT_API_KEY=${VT_API_KEY}
+      - SHODAN_API_KEY=${SHODAN_API_KEY}
+      - ABUSEIPDB_API_KEY=${ABUSEIPDB_API_KEY}
+      - RULES_DIR=/app/rules
       - REDIS_URL=redis://redis:6379
       - DATABASE_URL=postgresql://sentinel:sentinel@postgres:5432/sentinel
       - CORS_ORIGINS=http://localhost:3000
+    volumes:
+      - ./rules:/app/rules
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/api/v1/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/api/v1/ready || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 15s
     depends_on:
-      agents:
-        condition: service_healthy
       redis:
         condition: service_healthy
       postgres:

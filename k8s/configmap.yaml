@@ -9,9 +9,9 @@ metadata:
     app.kubernetes.io/name: sentinel
     app.kubernetes.io/part-of: sentinel
 data:
-  # api -> agents gRPC
-  AGENTS_GRPC_URL: "sentinel-agents:50052"
-  CORE_GRPC_URL: "sentinel-core:50051"
+  # NOTE: the Rust core and the agents orchestration run IN-PROCESS inside the
+  # api container (see docs/architecture.md). There is no gRPC between them, so
+  # no *_GRPC_URL is needed for the synchronous request path.
   CORS_ORIGINS: "http://localhost:3000"
   # Postgres / Redis service endpoints (credentials live in the Secret)
   POSTGRES_HOST: "sentinel-postgres"

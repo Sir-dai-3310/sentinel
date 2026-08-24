@@ -6,18 +6,12 @@ rule_files:
   - /etc/prometheus/alerts.yml
 
 scrape_configs:
+  # The Rust engine and the agents run IN-PROCESS inside the api service
+  # (see docs/architecture.md); engine metrics are merged into this endpoint.
   - job_name: 'sentinel-api'
     static_configs:
       - targets: ['api:8000']
     metrics_path: '/metrics'
-
-  - job_name: 'sentinel-core'
-    static_configs:
-      - targets: ['core:50051']
-
-  - job_name: 'sentinel-agents'
-    static_configs:
-      - targets: ['agents:50052']
 
   - job_name: 'postgres'
     static_configs:

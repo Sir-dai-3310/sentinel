@@ -4,17 +4,16 @@
 
 **English** | [简体中文](README_CN.md)
 
-[![CI](https://img.shields.io/github/actions/workflow/status/yourusername/sentinel/ci.yml?branch=main&label=CI)](https://github.com/yourusername/sentinel/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/codecov/c/github/yourusername/sentinel)](https://codecov.io/gh/yourusername/sentinel)
+[![CI](https://img.shields.io/github/actions/workflow/status/sentinel-project/sentinel/ci.yml?branch=main&label=CI)](https://github.com/sentinel-project/sentinel/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/codecov/c/github/sentinel-project/sentinel)](https://codecov.io/gh/sentinel-project/sentinel)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
-[![Rust](https://img.shields.io/badge/Rust-1.70+-orange.svg)](https://rust-lang.org)
+[![Rust](https://img.shields.io/badge/Rust-1.79+-orange.svg)](https://rust-lang.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-90%25%20coverage-brightgreen.svg)](tests/)
 [![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)](docker/)
-[![Release](https://img.shields.io/github/v/release/yourusername/sentinel)](https://github.com/yourusername/sentinel/releases)
-[![Contributors](https://img.shields.io/github/contributors/yourusername/sentinel)](https://github.com/yourusername/sentinel/graphs/contributors)
-[![Stars](https://img.shields.io/github/stars/yourusername/sentinel?style=social)](https://github.com/yourusername/sentinel/stargazers)
-[![Docs](https://img.shields.io/badge/docs-mkdocs-blue)](https://yourusername.github.io/sentinel/)
+[![Release](https://img.shields.io/github/v/release/sentinel-project/sentinel)](https://github.com/sentinel-project/sentinel/releases)
+[![Contributors](https://img.shields.io/github/contributors/sentinel-project/sentinel)](https://github.com/sentinel-project/sentinel/graphs/contributors)
+[![Stars](https://img.shields.io/github/stars/sentinel-project/sentinel?style=social)](https://github.com/sentinel-project/sentinel/stargazers)
+[![Docs](https://img.shields.io/badge/docs-mkdocs-blue)](https://sentinel-project.github.io/sentinel/)
 
 ---
 
@@ -38,7 +37,7 @@ Sentinel is an **AI-powered security log analysis platform** that combines:
 
 ```bash
 # Clone
-git clone https://github.com/yourusername/sentinel.git && cd sentinel
+git clone https://github.com/sentinel-project/sentinel.git && cd sentinel
 
 # Start everything (Core + API + Web UI + Database)
 docker-compose up
@@ -145,7 +144,7 @@ results = await agg.lookup_ip("1.2.3.4")
 
 ## 📖 Documentation
 
-**📚 Docs site**: [yourusername.github.io/sentinel](https://yourusername.github.io/sentinel/) (versioned via mike)
+**📚 Docs site**: [sentinel-project.github.io/sentinel](https://sentinel-project.github.io/sentinel/) (versioned via mike)
 
 - [Quickstart Guide](docs/quickstart.md)
 - [Architecture Deep Dive](docs/architecture.md)
@@ -370,10 +369,10 @@ MIT License - see [LICENSE](LICENSE)
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/sentinel&type=Date)](https://star-history.com/#yourusername/sentinel&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=sentinel-project/sentinel&type=Date)](https://star-history.com/#sentinel-project/sentinel&Date)
 
 ---
 
 **Built with ❤️ by the Sentinel community**
 
-[Report Bug](https://github.com/yourusername/sentinel/issues) · [Request Feature](https://github.com/yourusername/sentinel/issues) · [Join Discord](https://discord.gg/sentinel)
+[Report Bug](https://github.com/sentinel-project/sentinel/issues) · [Request Feature](https://github.com/sentinel-project/sentinel/issues) · [Join Discord](https://discord.gg/sentinel)

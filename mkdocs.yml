@@ -1,8 +1,8 @@
 site_name: Sentinel Documentation
 site_description: AI-native Security Operations Center (SOC) platform
-site_url: https://yourusername.github.io/sentinel/
-repo_url: https://github.com/yourusername/sentinel
-repo_name: yourusername/sentinel
+site_url: https://sentinel-project.github.io/sentinel/
+repo_url: https://github.com/sentinel-project/sentinel
+repo_name: sentinel-project/sentinel
 docs_dir: docs
 
 theme:

@@ -1,4 +1,4 @@
-# Contributing to Sentinel
+﻿# Contributing to Sentinel
 
 Thank you for your interest in contributing to Sentinel! 🎉
 
@@ -120,7 +120,7 @@ We aim to review PRs within 48 hours. Please be patient.
 ## Community
 
 - **Discord**: https://discord.gg/sentinel
-- **Discussions**: https://github.com/yourusername/sentinel/discussions
+- **Discussions**: https://github.com/sentinel-project/sentinel/discussions
 
 ## License
 

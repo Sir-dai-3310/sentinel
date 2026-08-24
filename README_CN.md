@@ -4,16 +4,15 @@
 
 [English](README.md) | **简体中文**
 
-[![CI](https://img.shields.io/github/actions/workflow/status/yourusername/sentinel/ci.yml?branch=main&label=CI)](https://github.com/yourusername/sentinel/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/codecov/c/github/yourusername/sentinel)](https://codecov.io/gh/yourusername/sentinel)
+[![CI](https://img.shields.io/github/actions/workflow/status/sentinel-project/sentinel/ci.yml?branch=main&label=CI)](https://github.com/sentinel-project/sentinel/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/codecov/c/github/sentinel-project/sentinel)](https://codecov.io/gh/sentinel-project/sentinel)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
-[![Rust](https://img.shields.io/badge/Rust-1.70+-orange.svg)](https://rust-lang.org)
+[![Rust](https://img.shields.io/badge/Rust-1.79+-orange.svg)](https://rust-lang.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-90%25%20coverage-brightgreen.svg)](tests/)
 [![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)](docker/)
-[![Release](https://img.shields.io/github/v/release/yourusername/sentinel)](https://github.com/yourusername/sentinel/releases)
-[![Stars](https://img.shields.io/github/stars/yourusername/sentinel?style=social)](https://github.com/yourusername/sentinel/stargazers)
-[![Docs](https://img.shields.io/badge/docs-mkdocs-blue)](https://yourusername.github.io/sentinel/)
+[![Release](https://img.shields.io/github/v/release/sentinel-project/sentinel)](https://github.com/sentinel-project/sentinel/releases)
+[![Stars](https://img.shields.io/github/stars/sentinel-project/sentinel?style=social)](https://github.com/sentinel-project/sentinel/stargazers)
+[![Docs](https://img.shields.io/badge/docs-mkdocs-blue)](https://sentinel-project.github.io/sentinel/)
 
 > 本文档译自英文原版，如有出入以英文版为准。
 
@@ -39,7 +38,7 @@ Sentinel 是一个 **AI 驱动的安全日志分析平台**，集五大能力于
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/sentinel.git && cd sentinel
+git clone https://github.com/sentinel-project/sentinel.git && cd sentinel
 
 # 一键启动（核心引擎 + API + Web 界面 + 数据库）
 docker-compose up
@@ -145,7 +144,7 @@ results = await agg.lookup_ip("1.2.3.4")
 
 ## 📖 文档
 
-**📚 文档站点**：[yourusername.github.io/sentinel](https://yourusername.github.io/sentinel/)（mike 版本化）
+**📚 文档站点**：[sentinel-project.github.io/sentinel](https://sentinel-project.github.io/sentinel/)（mike 版本化）
 
 - [快速上手指南](docs/quickstart.md)
 - [架构深度解析](docs/architecture.md)
@@ -371,10 +370,10 @@ MIT 许可证 — 详见 [LICENSE](LICENSE)。选择 MIT 的理由见[许可证�
 
 ## 🌟 Star 历史
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/sentinel&type=Date)](https://star-history.com/#yourusername/sentinel&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=sentinel-project/sentinel&type=Date)](https://star-history.com/#sentinel-project/sentinel&Date)
 
 ---
 
 **由 Sentinel 社区用 ❤️ 打造**
 
-[报告问题](https://github.com/yourusername/sentinel/issues) · [功能建议](https://github.com/yourusername/sentinel/issues) · [加入 Discord](https://discord.gg/sentinel)
+[报告问题](https://github.com/sentinel-project/sentinel/issues) · [功能建议](https://github.com/sentinel-project/sentinel/issues) · [加入 Discord](https://discord.gg/sentinel)

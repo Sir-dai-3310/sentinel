@@ -1,10 +1,10 @@
-title: "❓ "
+﻿title: "❓ "
 labels: ["needs-triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Ask a question about using or deploying Sentinel. For bugs, please use [Issues](https://github.com/yourusername/sentinel/issues) instead.
+        Ask a question about using or deploying Sentinel. For bugs, please use [Issues](https://github.com/sentinel-project/sentinel/issues) instead.
   - type: textarea
     id: question
     attributes:

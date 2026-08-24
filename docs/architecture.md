@@ -112,13 +112,21 @@ Modern SPA with:
 |------|----|----------|---------|
 | Web UI | API | REST/HTTPS | CRUD operations |
 | Web UI | API | WebSocket | Real-time analysis |
-| API | Rust Core | FFI (PyO3) | Rule evaluation |
-| API | Agents | gRPC | Agent orchestration |
+| API | Agents | In-process (Python import) | Agent orchestration (same process) |
+| Agents | Rust Core | In-process FFI (PyO3, built via maturin) | Sigma rule evaluation |
 | Agents | VirusTotal | REST/HTTPS | IP/hash/domain lookup |
 | Agents | AbuseIPDB | REST/HTTPS | IP reputation |
 | API | PostgreSQL | TCP | Data persistence |
 | API | Redis | TCP | Caching, task queue |
 | Prometheus | All | HTTP | Metrics scraping |
+
+> **In-process architecture**: the API, the agents orchestration (LangGraph), and
+> the Rust Sigma engine all run inside a single process. The API imports
+> `sentinel_agents` directly, and `sentinel_agents` calls the Rust engine through
+> PyO3 bindings (the `sentinel_core` extension module, compiled with maturin and
+> bundled into the api/agents images). There is **no gRPC** between these layers.
+> The only optional out-of-process component is the standalone Kafka streaming
+> consumer (`python -m sentinel_agents.streaming`).
 
 ## Security Architecture
 

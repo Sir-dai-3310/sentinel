@@ -11,8 +11,10 @@ resources:
   - postgres.yaml
   - redis.yaml
   - api.yaml
-  - agents.yaml
   - web.yaml
+  # agents.yaml is NOT part of the base: the agents library runs in-process
+  # inside the api container. Deploy agents.yaml separately only for the
+  # optional standalone Kafka streaming consumer (see docker-compose.kafka.yml).
 
 commonLabels:
   app.kubernetes.io/part-of: sentinel

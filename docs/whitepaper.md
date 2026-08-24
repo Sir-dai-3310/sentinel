@@ -1,4 +1,4 @@
-# Sentinel — One-Page Product Brief
+﻿# Sentinel — One-Page Product Brief
 
 ## What it is
 
@@ -46,13 +46,13 @@ Log stream → Rust Sigma engine (10,276 EPS) → high-confidence verdict
 
 ## Business model
 
-Open core: everything above is **MIT-licensed, free forever**. A planned enterprise edition (SAML SSO, advanced reporting, audit-log export, SLA support — see [enterprise.md](enterprise.md)) funds development. Commercial support and custom development are available today via [SUPPORT.md](https://github.com/yourusername/sentinel/blob/main/SUPPORT.md).
+Open core: everything above is **MIT-licensed, free forever**. A planned enterprise edition (SAML SSO, advanced reporting, audit-log export, SLA support — see [enterprise.md](enterprise.md)) funds development. Commercial support and custom development are available today via [SUPPORT.md](https://github.com/sentinel-project/sentinel/blob/main/SUPPORT.md).
 
 ## Get started
 
 ```bash
-git clone https://github.com/yourusername/sentinel.git && cd sentinel
+git clone https://github.com/sentinel-project/sentinel.git && cd sentinel
 docker-compose up   # → http://localhost:3000
 ```
 
-Full guide: [quickstart.md](quickstart.md) · Source: [github.com/yourusername/sentinel](https://github.com/yourusername/sentinel)
+Full guide: [quickstart.md](quickstart.md) · Source: [github.com/sentinel-project/sentinel](https://github.com/sentinel-project/sentinel)

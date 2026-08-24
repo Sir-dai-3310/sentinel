@@ -1,4 +1,4 @@
-# License Rationale
+﻿# License Rationale
 
 Sentinel is licensed under the **MIT License**. This document explains why, and what it means for you.
 
@@ -14,7 +14,7 @@ Sentinel is licensed under the **MIT License**. This document explains why, and 
 - ✅ Use, modify, distribute, and sell — privately or publicly.
 - ✅ No source-disclosure obligation for your modifications.
 - ⚠️ You must retain the copyright notice and license text in copies or substantial portions.
-- ⚠️ No warranty; no liability. If you need indemnification or an SLA, that's a commercial-support conversation (see [SUPPORT.md](https://github.com/yourusername/sentinel/blob/main/SUPPORT.md)).
+- ⚠️ No warranty; no liability. If you need indemnification or an SLA, that's a commercial-support conversation (see [SUPPORT.md](https://github.com/sentinel-project/sentinel/blob/main/SUPPORT.md)).
 - ❌ MIT grants no trademark rights. "Sentinel" branding may not be used to imply endorsement of a derived product.
 
 ## Relationship to SBOM and dependency licenses

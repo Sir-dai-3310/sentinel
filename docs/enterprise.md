@@ -1,4 +1,4 @@
-# Open Source vs Enterprise
+﻿# Open Source vs Enterprise
 
 Sentinel's core is MIT-licensed open source. An enterprise edition with additional capabilities is planned to fund long-term development. **Everything listed below as "Open Source" is what you have today** — no feature in the open-source edition will ever be removed or paywalled retroactively.
 
@@ -23,7 +23,7 @@ Sentinel's core is MIT-licensed open source. An enterprise edition with addition
 
 ## Current status
 
-The enterprise edition does not exist yet — the table is a roadmap commitment, not a sales page. If your organization needs an enterprise capability today, see [SUPPORT.md](https://github.com/yourusername/sentinel/blob/main/SUPPORT.md) for commercial support and custom development options.
+The enterprise edition does not exist yet — the table is a roadmap commitment, not a sales page. If your organization needs an enterprise capability today, see [SUPPORT.md](https://github.com/sentinel-project/sentinel/blob/main/SUPPORT.md) for commercial support and custom development options.
 
 ## Why this model
 

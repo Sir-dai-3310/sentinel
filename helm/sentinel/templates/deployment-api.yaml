@@ -52,7 +52,7 @@ spec:
                   key: {{ .Values.redis.secretKeys.redisUrl }}
           livenessProbe:
             httpGet:
-              path: /api/v1/health
+              path: /api/v1/live
               port: http
             initialDelaySeconds: 15
             periodSeconds: 20
@@ -60,7 +60,7 @@ spec:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /api/v1/health
+              path: /api/v1/ready
               port: http
             initialDelaySeconds: 10
             periodSeconds: 10

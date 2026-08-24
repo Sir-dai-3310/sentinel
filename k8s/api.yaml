@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: sentinel/api:1.0.0
+          image: sentinel/api:1.2.0
           securityContext:
             allowPrivilegeEscalation: false
             seccompProfile:
@@ -61,7 +61,7 @@ spec:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /api/v1/health
+              path: /api/v1/ready
               port: http
             initialDelaySeconds: 10
             periodSeconds: 10

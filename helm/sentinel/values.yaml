@@ -5,11 +5,11 @@ replicaCount: 2
 image:
   api:
     repository: sentinel/api
-    tag: "1.0.0"
+    tag: "1.2.0"
     pullPolicy: IfNotPresent
   web:
     repository: sentinel/web
-    tag: "1.0.0"
+    tag: "1.2.0"
     pullPolicy: IfNotPresent
 
 imagePullSecrets: []
