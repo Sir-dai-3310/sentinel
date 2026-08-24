@@ -1,14 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Shield, AlertTriangle, TrendingUp, Activity } from 'lucide-react'
-import axios from 'axios'
 import AttackHeatmap from '../components/AttackHeatmap'
 import ThreatTrend from '../components/ThreatTrend'
 import RuleHitsBar from '../components/RuleHitsBar'
 import LlmCostPanel from '../components/LlmCostPanel'
+import { api } from '../api/client'
 import { useDashboardConfig } from '../hooks/useDashboardConfig'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 interface Stats {
   total_events: number
@@ -22,8 +20,8 @@ export default function Dashboard() {
   const { cards, isVisible } = useDashboardConfig()
   const { data: stats, isLoading, error } = useQuery<Stats>({
     queryKey: ['stats'],
-    queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/v1/stats`)
+    queryFn: async ({ signal }) => {
+      const response = await api.get('/api/v1/stats', { signal })
       return response.data
     },
     refetchInterval: 5000, // Refresh every 5s

@@ -13,12 +13,10 @@ import {
   ChevronUp,
   ChevronDown,
 } from 'lucide-react'
-import axios from 'axios'
-import { useTheme, Theme } from '../hooks/useTheme'
+import { api } from '../api/client'
+import { useTheme, type Theme } from '../hooks/theme'
 import { useNotificationConfig } from '../hooks/useNotificationConfig'
 import { useDashboardConfig } from '../hooks/useDashboardConfig'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 interface Settings {
   llm_model: string
@@ -51,8 +49,8 @@ export default function Settings() {
 
   const { data: settings, isLoading, error } = useQuery<Settings>({
     queryKey: ['settings'],
-    queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/v1/settings`)
+    queryFn: async ({ signal }) => {
+      const response = await api.get('/api/v1/settings', { signal })
       return response.data
     },
     retry: 1,

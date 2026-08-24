@@ -3,7 +3,8 @@
     "dashboard": "대시보드",
     "analysis": "로그 분석",
     "rules": "규칙 관리",
-    "settings": "설정"
+    "settings": "설정",
+    "logout": "로그아웃"
   },
   "dashboard": {
     "title": "보안 대시보드",
@@ -130,5 +131,13 @@
     "language": "언어",
     "english": "English",
     "chinese": "中文"
+  },
+  "login": {
+    "subtitle": "워크스페이스에 로그인",
+    "username": "사용자 이름",
+    "password": "비밀번호",
+    "signIn": "로그인",
+    "submitting": "로그인 중...",
+    "invalidCredentials": "사용자 이름 또는 비밀번호가 올바르지 않습니다"
   }
 }

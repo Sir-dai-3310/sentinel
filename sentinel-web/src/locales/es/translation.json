@@ -3,7 +3,8 @@
     "dashboard": "Panel",
     "analysis": "Análisis",
     "rules": "Reglas",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "logout": "Cerrar sesión"
   },
   "dashboard": {
     "title": "Panel de Seguridad",
@@ -130,5 +131,13 @@
     "language": "Idioma",
     "english": "English",
     "chinese": "中文"
+  },
+  "login": {
+    "subtitle": "Inicia sesión en tu espacio de trabajo",
+    "username": "Usuario",
+    "password": "Contraseña",
+    "signIn": "Iniciar sesión",
+    "submitting": "Iniciando sesión...",
+    "invalidCredentials": "Usuario o contraseña no válidos"
   }
 }

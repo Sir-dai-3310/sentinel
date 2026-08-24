@@ -2,11 +2,10 @@ import { useMemo } from 'react'
 import ReactECharts from 'echarts-for-react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import axios from 'axios'
-import { useTheme } from '../hooks/useTheme'
+import { api } from '../api/client'
+import { useTheme } from '../hooks/theme'
 import ChartEmpty from './ChartEmpty'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const TOP_N = 10
 
 interface RuleHit {
@@ -22,7 +21,7 @@ export default function RuleHitsBar() {
   const { data, isError } = useQuery<RuleHit[]>({
     queryKey: ['stats-rule-hits'],
     queryFn: async () => {
-      const res = await axios.get(`${API_URL}/api/v1/stats/rule-hits`)
+      const res = await api.get('/api/v1/stats/rule-hits')
       return res.data
     },
     retry: 1,

@@ -2,11 +2,9 @@ import { useMemo } from 'react'
 import ReactECharts from 'echarts-for-react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import axios from 'axios'
-import { useTheme } from '../hooks/useTheme'
+import { api } from '../api/client'
+import { useTheme } from '../hooks/theme'
 import ChartEmpty from './ChartEmpty'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 interface TrendPoint {
   timestamp: string
@@ -21,7 +19,7 @@ export default function ThreatTrend() {
   const { data, isError } = useQuery<TrendPoint[]>({
     queryKey: ['stats-threat-trend'],
     queryFn: async () => {
-      const res = await axios.get(`${API_URL}/api/v1/stats/threat-trend`)
+      const res = await api.get('/api/v1/stats/threat-trend')
       return res.data
     },
     retry: 1,

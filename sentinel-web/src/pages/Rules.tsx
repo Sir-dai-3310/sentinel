@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Plus, Trash2, RefreshCw, FileText } from 'lucide-react'
-import axios from 'axios'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { api } from '../api/client'
 
 interface RuleSummary {
   id: string
@@ -18,17 +16,17 @@ export default function Rules() {
   const queryClient = useQueryClient()
   const [showCreateModal, setShowCreateModal] = useState(false)
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<{ total: number; rules: RuleSummary[] }>({
     queryKey: ['rules'],
-    queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/v1/rules`)
+    queryFn: async ({ signal }) => {
+      const response = await api.get('/api/v1/rules', { signal })
       return response.data
     },
   })
 
   const deleteMutation = useMutation({
     mutationFn: async (ruleId: string) => {
-      await axios.delete(`${API_URL}/api/v1/rules/${ruleId}`)
+      await api.delete(`/api/v1/rules/${ruleId}`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rules'] })
@@ -37,7 +35,7 @@ export default function Rules() {
 
   const reloadMutation = useMutation({
     mutationFn: async () => {
-      await axios.post(`${API_URL}/api/v1/rules/reload`)
+      await api.post('/api/v1/rules/reload')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rules'] })

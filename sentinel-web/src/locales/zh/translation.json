@@ -3,7 +3,8 @@
     "dashboard": "仪表盘",
     "analysis": "日志分析",
     "rules": "规则管理",
-    "settings": "系统设置"
+    "settings": "系统设置",
+    "logout": "退出登录"
   },
   "dashboard": {
     "title": "安全仪表盘",
@@ -130,5 +131,13 @@
     "language": "语言",
     "english": "English",
     "chinese": "中文"
+  },
+  "login": {
+    "subtitle": "登录到您的工作区",
+    "username": "用户名",
+    "password": "密码",
+    "signIn": "登录",
+    "submitting": "登录中...",
+    "invalidCredentials": "用户名或密码错误"
   }
 }

@@ -7,6 +7,7 @@ arg parsing, config resolution, output rendering, error paths — is real.
 
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -85,7 +86,17 @@ def test_config_set_url_and_token(tmp_path, asgi_client_class, capsys, monkeypat
     assert code == 0
     cfg_file = home / ".sentinel" / "config.toml"
     assert 'token = "secret-token"' in cfg_file.read_text()
-    assert (cfg_file.stat().st_mode & 0o777) == 0o600
+    if os.name != "nt":
+        assert (cfg_file.stat().st_mode & 0o777) == 0o600
+    else:
+        acl = subprocess.run(
+            ["icacls", str(cfg_file)],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+        assert "(F)" in acl
+        assert "(I)" not in acl
 
     # show masks the token
     code, out, _ = run_cli(monkeypatch, capsys, ["config", "show"], home=home)

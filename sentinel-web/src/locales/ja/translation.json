@@ -3,7 +3,8 @@
     "dashboard": "ダッシュボード",
     "analysis": "ログ分析",
     "rules": "ルール管理",
-    "settings": "設定"
+    "settings": "設定",
+    "logout": "サインアウト"
   },
   "dashboard": {
     "title": "セキュリティダッシュボード",
@@ -130,5 +131,13 @@
     "language": "言語",
     "english": "English",
     "chinese": "中文"
+  },
+  "login": {
+    "subtitle": "ワークスペースにサインイン",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "signIn": "サインイン",
+    "submitting": "サインイン中...",
+    "invalidCredentials": "ユーザー名またはパスワードが正しくありません"
   }
 }

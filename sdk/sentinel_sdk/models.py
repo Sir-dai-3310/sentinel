@@ -137,6 +137,8 @@ class AnalysisResult:
     agent_trace: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
     skipped_llm: bool = False
+    analysis_status: str = "completed"
+    analysis_error: str | None = None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "AnalysisResult":
@@ -147,6 +149,8 @@ class AnalysisResult:
             agent_trace=_get(data, "agent_trace", []),
             metadata=_get(data, "metadata", {}),
             skipped_llm=_get(data, "skipped_llm", False),
+            analysis_status=_get(data, "analysis_status", "completed"),
+            analysis_error=data.get("analysis_error"),
         )
 
 

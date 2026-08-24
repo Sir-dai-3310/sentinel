@@ -3,7 +3,16 @@
     "dashboard": "Dashboard",
     "analysis": "Analysis",
     "rules": "Rules",
-    "settings": "Settings"
+    "settings": "Settings",
+    "logout": "Sign out"
+  },
+  "login": {
+    "subtitle": "Sign in to your workspace",
+    "username": "Username",
+    "password": "Password",
+    "signIn": "Sign in",
+    "submitting": "Signing in...",
+    "invalidCredentials": "Invalid username or password"
   },
   "dashboard": {
     "title": "Security Dashboard",

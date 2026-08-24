@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
 import { DollarSign } from 'lucide-react'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { api } from '../api/client'
 
 interface LlmCost {
   total_cost_usd?: number
@@ -19,7 +18,7 @@ export default function LlmCostPanel() {
   const { data, error, isLoading } = useQuery<LlmCost>({
     queryKey: ['stats-llm-costs'],
     queryFn: async () => {
-      const res = await axios.get(`${API_URL}/api/v1/stats/llm-costs`)
+      const res = await api.get('/api/v1/stats/llm-costs')
       return res.data
     },
     retry: false,

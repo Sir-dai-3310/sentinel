@@ -5,7 +5,24 @@ import { BrowserRouter } from 'react-router-dom'
 import Rules from '../pages/Rules'
 
 // Mock axios
-vi.mock('axios')
+vi.mock('axios', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('axios')>()
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      create: vi.fn(() => ({
+        get: vi.fn().mockResolvedValue({ data: { total: 0, rules: [] } }),
+        post: vi.fn(),
+        delete: vi.fn(),
+        interceptors: {
+          request: { use: vi.fn() },
+          response: { use: vi.fn() },
+        },
+      })),
+    },
+  }
+})
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -23,18 +40,19 @@ const createWrapper = () => {
 }
 
 describe('Rules', () => {
-  it('renders rules page title', () => {
+  it('renders rules page title', async () => {
     render(<Rules />, { wrapper: createWrapper() })
-    expect(screen.getByText('Sigma Rules')).toBeInTheDocument()
+    expect(await screen.findByText('Sigma Rules')).toBeInTheDocument()
+
   })
 
-  it('renders new rule button', () => {
+  it('renders new rule button', async () => {
     render(<Rules />, { wrapper: createWrapper() })
-    expect(screen.getByText('New Rule')).toBeInTheDocument()
+    expect(await screen.findByText('New Rule')).toBeInTheDocument()
   })
 
-  it('renders reload button', () => {
+  it('renders reload button', async () => {
     render(<Rules />, { wrapper: createWrapper() })
-    expect(screen.getByText('Reload')).toBeInTheDocument()
+    expect(await screen.findByText('Reload')).toBeInTheDocument()
   })
 })

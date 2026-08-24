@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
 import { Upload, Loader, AlertCircle, CheckCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useWebSocket } from '../hooks/useWebSocket'
+import { useWebSocket, type WSMessage } from '../hooks/useWebSocket'
+import { wsUrl } from '../api/client'
 import { getNotificationConfig } from '../hooks/useNotificationConfig'
 
 interface AnalysisResult {
@@ -20,6 +21,8 @@ interface AnalysisResult {
   }>
   agent_trace: string[]
   skipped_llm: boolean
+  analysis_status?: 'completed' | 'failed' | 'skipped'
+  analysis_error?: string | null
 }
 
 function maybeNotify(result: AnalysisResult) {
@@ -48,23 +51,26 @@ export default function Analysis() {
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState<string>('')
 
-  const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/analysis'
+  const ws = wsUrl('/ws/analysis')
 
   const handleMessage = useCallback(
-    (message: { type: string; data?: any }) => {
+    (message: WSMessage) => {
       if (message.type === 'ack') {
         setProgress(t('analysis.started'))
       } else if (message.type === 'progress') {
-        setProgress(
-          t('analysis.stage', { stage: message.data.stage, status: message.data.status })
-        )
+        const stage = message.data?.stage
+        const status = message.data?.status
+        if (typeof stage !== 'string' || typeof status !== 'string') return
+        setProgress(t('analysis.stage', { stage, status }))
       } else if (message.type === 'result') {
-        setResult(message.data)
-        maybeNotify(message.data)
+        const data = message.data as unknown as AnalysisResult
+        setResult(data)
+        maybeNotify(data)
         setIsAnalyzing(false)
         setProgress('')
       } else if (message.type === 'error') {
-        setError(message.data.error)
+        const errorText = message.data?.error
+        setError(typeof errorText === 'string' ? errorText : t('analysis.wsError'))
         setIsAnalyzing(false)
         setProgress('')
       }
@@ -72,7 +78,7 @@ export default function Analysis() {
     [t]
   )
 
-  const { isConnected, sendMessage } = useWebSocket(wsUrl, {
+  const { isConnected, sendMessage } = useWebSocket(ws, {
     onMessage: handleMessage,
     onError: () => {
       setError(t('analysis.wsError'))
@@ -185,6 +191,18 @@ export default function Analysis() {
               </span>
             )}
           </div>
+
+          {result.analysis_status === 'failed' && (
+            <div className="bg-red-500/10 border border-red-500 rounded-lg p-4 flex items-start space-x-3">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-red-500">{t('analysis.error')}</h4>
+                <p className="text-sm text-red-400">
+                  {result.analysis_error || t('analysis.wsError')}
+                </p>
+              </div>
+            </div>
+          )}
 
           {result.verdict && (
             <div className="space-y-4">

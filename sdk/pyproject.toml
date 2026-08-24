@@ -8,11 +8,18 @@ version = "1.2.0"
 description = "Async Python SDK for the Sentinel security log analysis API"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "Apache-2.0" }
+license = { text = "MIT" }
 authors = [{ name = "Sentinel Project" }]
 keywords = ["security", "siem", "log-analysis", "sigma"]
 dependencies = [
     "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.4",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.1",
 ]
 
 [project.urls]

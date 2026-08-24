@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 
-interface WSMessage {
+export interface WSMessage {
   type: string
-  data?: any
+  data?: Record<string, unknown>
 }
 
 interface UseWebSocketOptions {
@@ -14,12 +14,18 @@ interface UseWebSocketOptions {
   heartbeatInterval?: number
 }
 
+/**
+ * WebSocket hook with stable reconnection semantics.
+ *
+ * Fixes the previous "reconnect storm" bug: callbacks used to live in the
+ * connect() dependency array, so every render with inline handlers tore the
+ * socket down and reconnected (and each incoming message re-rendered the
+ * page, looping). Handlers are now kept in refs; connect() only depends on
+ * [url]. A manual-close flag prevents ghost reconnections after unmount, and
+ * reconnects use exponential backoff (capped).
+ */
 export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   const {
-    onMessage,
-    onError,
-    onOpen,
-    onClose,
     reconnectInterval = 5000,
     heartbeatInterval = 30000,
   } = options
@@ -27,19 +33,38 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   const [isConnected, setIsConnected] = useState(false)
   const [lastMessage, setLastMessage] = useState<WSMessage | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>()
-  const heartbeatTimeoutRef = useRef<NodeJS.Timeout>()
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const heartbeatTimeoutRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Stable handler refs: inline arrow props no longer force reconnects.
+  const handlersRef = useRef(options)
+  handlersRef.current = options
+
+  // True after an explicit disconnect/unmount: skip auto-reconnect.
+  const manualCloseRef = useRef(false)
+
+  // Reconnect attempts since the last successful connection (for backoff).
+  const backoffRef = useRef(0)
+
+  const clearTimers = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current)
+      reconnectTimeoutRef.current = null
+    }
+    if (heartbeatTimeoutRef.current) {
+      clearInterval(heartbeatTimeoutRef.current)
+      heartbeatTimeoutRef.current = null
+    }
+  }, [])
 
   const connect = useCallback(() => {
     try {
+      manualCloseRef.current = false
       const ws = new WebSocket(url)
 
       ws.onopen = () => {
-        console.log('WebSocket connected')
         setIsConnected(true)
-        onOpen?.()
-
-        // Start heartbeat
+        handlersRef.current.onOpen?.()
         if (heartbeatInterval > 0) {
           heartbeatTimeoutRef.current = setInterval(() => {
             if (ws.readyState === WebSocket.OPEN) {
@@ -53,7 +78,7 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
         try {
           const message: WSMessage = JSON.parse(event.data)
           setLastMessage(message)
-          onMessage?.(message)
+          handlersRef.current.onMessage?.(message)
         } catch (error) {
           console.error('Failed to parse WebSocket message:', error)
         }
@@ -61,25 +86,23 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
 
       ws.onerror = (error) => {
         console.error('WebSocket error:', error)
-        onError?.(error)
+        handlersRef.current.onError?.(error)
       }
 
       ws.onclose = () => {
-        console.log('WebSocket disconnected')
         setIsConnected(false)
-        onClose?.()
-
-        // Clear heartbeat
+        handlersRef.current.onClose?.()
         if (heartbeatTimeoutRef.current) {
           clearInterval(heartbeatTimeoutRef.current)
+          heartbeatTimeoutRef.current = null
         }
-
-        // Attempt reconnection
-        if (reconnectInterval > 0) {
-          reconnectTimeoutRef.current = setTimeout(() => {
-            console.log('Attempting to reconnect...')
-            connect()
-          }, reconnectInterval)
+        // Only reconnect for unexpected disconnects, never after a manual
+        // close or unmount (the old code reconnected forever).
+        if (!manualCloseRef.current && reconnectInterval > 0) {
+          // Exponential backoff: 5s, 10s, 20s ... capped at 60s.
+          const attempts = (backoffRef.current += 1)
+          const delay = Math.min(reconnectInterval * 2 ** (attempts - 1), 60000)
+          reconnectTimeoutRef.current = setTimeout(() => connect(), delay)
         }
       }
 
@@ -87,20 +110,16 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
     } catch (error) {
       console.error('Failed to create WebSocket:', error)
     }
-  }, [url, onMessage, onError, onOpen, onClose, reconnectInterval, heartbeatInterval])
+  }, [url, reconnectInterval, heartbeatInterval])
 
   const disconnect = useCallback(() => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current)
-    }
-    if (heartbeatTimeoutRef.current) {
-      clearInterval(heartbeatTimeoutRef.current)
-    }
+    manualCloseRef.current = true
+    clearTimers()
     if (wsRef.current) {
       wsRef.current.close()
       wsRef.current = null
     }
-  }, [])
+  }, [clearTimers])
 
   const sendMessage = useCallback((message: WSMessage) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -116,6 +135,11 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
       disconnect()
     }
   }, [connect, disconnect])
+
+  // Reset backoff whenever the connection is established.
+  useEffect(() => {
+    if (isConnected) backoffRef.current = 0
+  }, [isConnected])
 
   return {
     isConnected,

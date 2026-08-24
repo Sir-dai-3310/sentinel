@@ -88,6 +88,12 @@ async def test_conflict_maps_to_conflict_error(admin_client):
     await admin_client.delete_rule("conflict-test-rule")
 
 
+async def test_analysis_result_legacy_payload_defaults_status():
+    result = AnalysisResult.from_dict({"verdict": {"malicious": False}})
+    assert result.analysis_status == "completed"
+    assert result.analysis_error is None
+
+
 # ----------------------------------------------------------------------
 # analyze round-trip
 # ----------------------------------------------------------------------

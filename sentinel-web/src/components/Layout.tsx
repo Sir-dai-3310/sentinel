@@ -1,16 +1,19 @@
 import { ReactNode } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Shield, Activity, FileText, Settings } from 'lucide-react'
+import { Shield, Activity, FileText, Settings, LogOut } from 'lucide-react'
 import LanguageSwitcher from './LanguageSwitcher'
+import { clearToken } from '../api/client'
 
-interface LayoutProps {
-  children: ReactNode
-}
-
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children }: { children: ReactNode }) {
   const location = useLocation()
+  const navigate = useNavigate()
   const { t } = useTranslation()
+
+  const handleLogout = () => {
+    clearToken()
+    navigate('/login')
+  }
 
   const navItems = [
     { path: '/', icon: Activity, label: t('nav.dashboard') },
@@ -52,6 +55,14 @@ export default function Layout({ children }: LayoutProps) {
                 })}
               </nav>
               <LanguageSwitcher />
+              <button
+                onClick={handleLogout}
+                title={t('nav.logout')}
+                aria-label={t('nav.logout')}
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>

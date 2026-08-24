@@ -2,9 +2,27 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Dashboard from '../pages/Dashboard'
+import { ThemeProvider } from '../hooks/useTheme'
 
 // Mock axios
-vi.mock('axios')
+vi.mock('axios', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('axios')>()
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      create: vi.fn(() => ({
+        get: vi.fn().mockResolvedValue({ data: {} }),
+        post: vi.fn(),
+        delete: vi.fn(),
+        interceptors: {
+          request: { use: vi.fn() },
+          response: { use: vi.fn() },
+        },
+      })),
+    },
+  }
+})
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -15,7 +33,9 @@ const createWrapper = () => {
     },
   })
   return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>{children}</ThemeProvider>
+    </QueryClientProvider>
   )
 }
 
