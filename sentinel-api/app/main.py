@@ -5,10 +5,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
+from prometheus_client import CollectorRegistry, generate_latest
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.i18n import localize_error_body, negotiate_locale
+from app.logging_config import RequestIDMiddleware
 from app.retention import start_retention_task, stop_retention_task
 from app.routers import analysis, auth, rules, health, logs, privacy, stats, settings, tenants
 from app.security import SecurityHeadersMiddleware, RateLimitMiddleware
@@ -55,12 +57,13 @@ app = FastAPI(
         "url": "https://github.com/sentinel-project/sentinel",
         "email": "security@sentinel.dev",
     },
-    license_info={"name": "Apache-2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0"},
+    license_info={"name": "MIT", "url": "https://opensource.org/licenses/MIT"},
     openapi_tags=OPENAPI_TAGS,
     lifespan=lifespan,
 )
 
 # Prometheus metrics instrumentation
+metrics_registry = CollectorRegistry()
 instrumentator = Instrumentator(
     should_group_status_codes=True,
     should_ignore_untemplated=True,
@@ -68,11 +71,28 @@ instrumentator = Instrumentator(
     excluded_handlers=["/metrics"],
     inprogress_name="sentinel_requests_inprogress",
     inprogress_labels=True,
+    registry=metrics_registry,
 )
-instrumentator.instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
+instrumentator.instrument(app)
+
+
+@app.get("/metrics", include_in_schema=False)
+async def metrics_endpoint() -> PlainTextResponse:
+    """Expose HTTP middleware metrics plus the Rust engine metrics when the
+    compiled `sentinel_core` module is available."""
+    payload = ""
+    try:
+        import sentinel_core
+
+        payload = sentinel_core.metrics_text()
+    except ImportError:
+        pass
+    payload += generate_latest(metrics_registry).decode("utf-8")
+    return PlainTextResponse(payload, media_type="text/plain; version=0.0.4")
 
 # Security headers middleware
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestIDMiddleware)
 
 
 def _response_headers(response) -> dict:
@@ -158,8 +178,22 @@ app.add_api_websocket_route("/ws/analysis", manager.manager.websocket_endpoint)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
-    """Global exception handler."""
+    """Global exception handler.
+
+    Never leak internal exception details (DB URLs, paths, stack info) to
+    clients: return a generic message plus a request-scoped correlation id
+    that is also logged server-side.
+    """
+    import logging
+    import uuid
+
+    request_id = (getattr(request, "scope", None) or {}).get("request_id") or str(
+        uuid.uuid4()
+    )
+    logging.getLogger("sentinel.api.errors").exception(
+        "unhandled exception [request_id=%s]", request_id
+    )
     return JSONResponse(
         status_code=500,
-        content={"error": "Internal server error", "detail": str(exc)},
+        content={"error": "Internal server error", "request_id": request_id},
     )

@@ -1,6 +1,7 @@
 """Tenant management API (admin only)."""
 
 import re
+from typing import Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -40,6 +41,17 @@ class TenantOut(BaseModel):
     max_analyses_per_day: int
 
 
+def _tenant_out(tenant: Tenant) -> TenantOut:
+    return TenantOut(
+        id=cast(int, tenant.id),
+        slug=cast(str, tenant.slug),
+        name=cast(str, tenant.name),
+        active=cast(bool, tenant.active),
+        max_requests_per_minute=cast(int, tenant.max_requests_per_minute),
+        max_analyses_per_day=cast(int, tenant.max_analyses_per_day),
+    )
+
+
 @router.post("/tenants", response_model=TenantOut, status_code=status.HTTP_201_CREATED)
 async def create_tenant(
     payload: TenantCreate,
@@ -73,14 +85,7 @@ async def create_tenant(
         )
         session.add(tenant)
         await session.flush()
-        return TenantOut(
-            id=tenant.id,
-            slug=tenant.slug,
-            name=tenant.name,
-            active=tenant.active,
-            max_requests_per_minute=tenant.max_requests_per_minute,
-            max_analyses_per_day=tenant.max_analyses_per_day,
-        )
+        return _tenant_out(tenant)
 
 
 @router.get("/tenants", response_model=list[TenantOut])
@@ -88,17 +93,7 @@ async def list_tenants(admin: User = Depends(require_admin)) -> list[TenantOut]:
     """List all tenants (admin only)."""
     async with get_session() as session:
         result = await session.execute(select(Tenant).order_by(Tenant.id))
-        return [
-            TenantOut(
-                id=t.id,
-                slug=t.slug,
-                name=t.name,
-                active=t.active,
-                max_requests_per_minute=t.max_requests_per_minute,
-                max_analyses_per_day=t.max_analyses_per_day,
-            )
-            for t in result.scalars().all()
-        ]
+        return [_tenant_out(t) for t in result.scalars().all()]
 
 
 @router.delete("/tenants/{slug}", response_model=TenantOut)
@@ -118,16 +113,9 @@ async def disable_tenant(slug: str, admin: User = Depends(require_admin)) -> Ten
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"tenant '{slug}' not found",
             )
-        tenant.active = False
+        cast(Any, tenant).active = False
         await session.flush()
-        return TenantOut(
-            id=tenant.id,
-            slug=tenant.slug,
-            name=tenant.name,
-            active=tenant.active,
-            max_requests_per_minute=tenant.max_requests_per_minute,
-            max_analyses_per_day=tenant.max_analyses_per_day,
-        )
+        return _tenant_out(tenant)
 
 
 @router.get("/tenants/current")

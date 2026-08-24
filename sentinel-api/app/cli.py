@@ -11,6 +11,7 @@ import argparse
 import asyncio
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,35 @@ except ImportError:  # pragma: no cover - environment issue, give a clear hint
 CONFIG_DIR = Path.home() / ".sentinel"
 CONFIG_FILE = CONFIG_DIR / "config.toml"
 DEFAULT_API_URL = "http://localhost:8000"
+
+
+def secure_config_file() -> None:
+    CONFIG_FILE.chmod(0o600)
+    if os.name != "nt":
+        return
+    try:
+        identity = subprocess.run(
+            ["whoami"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        if not identity:
+            raise RuntimeError("could not determine current Windows identity")
+        subprocess.run(
+            [
+                "icacls",
+                str(CONFIG_FILE),
+                "/inheritance:r",
+                "/grant:r",
+                f"{identity}:F",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.SubprocessError, RuntimeError) as e:
+        raise PermissionError(f"could not secure config file {CONFIG_FILE}: {e}") from e
 
 
 # ----------------------------------------------------------------------
@@ -60,7 +90,7 @@ def save_config(cfg: dict[str, Any]) -> None:
             escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
             lines.append(f'{key} = "{escaped}"')
     CONFIG_FILE.write_text("\n".join(lines) + "\n")
-    CONFIG_FILE.chmod(0o600)
+    secure_config_file()
 
 
 def resolve_api_url(args: argparse.Namespace, cfg: dict[str, Any]) -> str:

@@ -1,6 +1,5 @@
 """RBAC (Role-Based Access Control) for Sentinel API."""
 
-import os
 from enum import Enum
 from typing import Any
 
@@ -40,6 +39,12 @@ class RoleConfig:
         "settings_view": [Role.ADMIN, Role.ANALYST],
         "settings_update": [Role.ADMIN],
 
+        # Tenants (admin-only domain)
+        "tenant_manage": [Role.ADMIN],
+
+        # Privacy / GDPR (admin-only domain)
+        "privacy_manage": [Role.ADMIN],
+
         # Statistics
         "stats_view": [Role.ADMIN, Role.ANALYST, Role.VIEWER],
     }
@@ -59,22 +64,21 @@ class UserWithRole(User):
 
 def get_user_role(user: User) -> Role:
     """
-    Get user role from JWT claims or environment.
+    Resolve the user's role from JWT claims.
 
-    In production, this would query a user database.
-    For now, use environment variable mapping or JWT claims.
+    The token's ``roles`` claim (issued at login from the trusted user
+    source) is authoritative. Legacy username-env mapping was removed: it
+    ignored the JWT roles claim and could disagree with token-based checks
+    elsewhere (two parallel role systems).
     """
-    # Check if user has role in JWT (would be set by auth provider)
-    # For demo purposes, use a simple mapping
-    admin_users = os.getenv("ADMIN_USERS", "admin").split(",")
-    analyst_users = os.getenv("ANALYST_USERS", "analyst").split(",")
-
-    if user.username in admin_users:
+    roles = getattr(user, "roles", None) or []
+    # admin wins, then analyst, then viewer
+    role_names = {str(r).lower() for r in roles}
+    if Role.ADMIN.value in role_names:
         return Role.ADMIN
-    elif user.username in analyst_users:
+    if Role.ANALYST.value in role_names:
         return Role.ANALYST
-    else:
-        return Role.VIEWER
+    return Role.VIEWER
 
 
 async def get_current_user_with_role(

@@ -162,10 +162,22 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         # Get client identifier
         client_ip = request.client.host if request.client else "unknown"
-        # Also check for forwarded IP
-        forwarded_for = request.headers.get("X-Forwarded-For")
-        if forwarded_for:
-            client_ip = forwarded_for.split(",")[0].strip()
+        # X-Forwarded-For is client-forgeable: only honour it when explicitly
+        # deployed behind a trusted proxy (TRUSTED_PROXY_COUNT hops). Taking
+        # the leftmost value unconditionally lets attackers mint a fresh rate
+        # -limit bucket per request.
+        trusted_hops = os.getenv("TRUSTED_PROXY_COUNT", "0").strip() or "0"
+        try:
+            hops = int(trusted_hops)
+        except ValueError:
+            hops = 0
+        if hops > 0:
+            forwarded_for = request.headers.get("X-Forwarded-For")
+            if forwarded_for:
+                chain = [h.strip() for h in forwarded_for.split(",") if h.strip()]
+                # Rightmost N entries were appended by our trusted proxies;
+                # the client IP is the entry just before them.
+                client_ip = chain[-hops] if len(chain) >= hops + 1 else (chain[0] if chain else client_ip)
 
         if not self.limiter.is_allowed(client_ip):
             remaining = self.limiter.remaining(client_ip)

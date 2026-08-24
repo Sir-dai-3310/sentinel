@@ -8,7 +8,7 @@ from app.i18n import localize_error_body, message_for, negotiate_locale
 from app.main import app
 
 client = TestClient(app)
-TOKEN = create_access_token("i18n_user")
+TOKEN = create_access_token("i18n_user", roles=["analyst"])
 AUTH = {"Authorization": f"Bearer {TOKEN}"}
 
 

@@ -6,7 +6,7 @@ from app.auth.jwt import create_access_token
 from app.main import app
 
 client = TestClient(app)
-TOKEN = create_access_token("stats_user")
+TOKEN = create_access_token("stats_user", roles=["analyst"])
 HEADERS = {"Authorization": f"Bearer {TOKEN}"}
 
 

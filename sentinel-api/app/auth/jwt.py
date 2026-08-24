@@ -9,10 +9,17 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
-# JWT Configuration
+from app.env import is_local_mode
+
+# JWT Configuration — fail-closed: the default secret is only tolerated in
+# explicitly local environments; anywhere else (staging/prod/typo'd values)
+# the app refuses to start rather than accepting forgeable tokens.
 SECRET_KEY = os.getenv("JWT_SECRET", "CHANGE_THIS_IN_PRODUCTION")
-if os.getenv("ENVIRONMENT") == "production" and SECRET_KEY == "CHANGE_THIS_IN_PRODUCTION":
-    raise ValueError("JWT_SECRET must be set in production (default value is insecure)")
+if not is_local_mode() and SECRET_KEY == "CHANGE_THIS_IN_PRODUCTION":
+    raise ValueError(
+        "JWT_SECRET must be set when ENVIRONMENT is not one of "
+        "development/dev/local (default secret is insecure)"
+    )
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "60"))
 
@@ -103,22 +110,22 @@ def verify_token(token: str) -> TokenData:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         sub: str = payload.get("sub")
-        exp: datetime = datetime.fromtimestamp(payload.get("exp"))
-        iat: datetime = datetime.fromtimestamp(payload.get("iat"))
+        exp = payload.get("exp")
+        iat = payload.get("iat")
 
-        if sub is None:
+        if sub is None or exp is None or iat is None:
             raise credentials_exception
 
         token_data = TokenData(
             sub=sub,
-            exp=exp,
-            iat=iat,
+            exp=datetime.fromtimestamp(exp),
+            iat=datetime.fromtimestamp(iat),
             tenant=payload.get("tenant", "default"),
             roles=payload.get("roles", []),
         )
         return token_data
 
-    except JWTError:
+    except (JWTError, TypeError, ValueError):
         raise credentials_exception
 
 
@@ -187,7 +194,8 @@ async def get_api_key(
         )
 
     api_key = credentials.credentials
-    valid_keys = os.getenv("API_KEYS", "").split(",")
+    # Filter empties: an unset API_KEYS must not accept a blank bearer token.
+    valid_keys = [k for k in os.getenv("API_KEYS", "").split(",") if k]
 
     if api_key not in valid_keys:
         raise HTTPException(

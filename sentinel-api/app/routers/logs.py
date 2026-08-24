@@ -9,7 +9,7 @@ import csv
 import io
 import json
 import uuid
-from typing import Any
+from typing import Any, cast
 
 from fastapi import (
     APIRouter,
@@ -104,6 +104,7 @@ async def _process_import(task_id: str, text: str, fmt: str, tenant_id: str) -> 
         ).scalar_one_or_none()
         if task is None:
             return
+        task = cast(Any, task)
 
         task.status = "processing"
         task.total = len(rows) + parse_failures
@@ -190,6 +191,7 @@ async def get_import_status(task_id: str, user: User = Depends(require_auth)) ->
     if task is None:
         raise HTTPException(status_code=404, detail="Import task not found")
 
+    task = cast(Any, task)
     return ImportStatus(
         task_id=task.task_id,
         status=task.status,

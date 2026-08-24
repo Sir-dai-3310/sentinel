@@ -10,13 +10,42 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.auth.jwt import User, require_auth
+from app.rbac import require_permission
 
+# Read access for all authenticated users; write access is admin-only
+# (the RBAC matrix existed but was never mounted before).
 router = APIRouter(dependencies=[Depends(require_auth)])
 
 RULES_DIR = Path(os.getenv("RULES_DIR", "rules"))
 
 # Rule IDs become filenames — restrict to safe characters (covers Sigma UUIDs and R### style).
 RULE_ID_PATTERN = r"^[A-Za-z0-9_-]+$"
+
+
+def _iter_rule_files() -> list[Path]:
+    """All ``*.yml`` rule files under RULES_DIR (empty when dir missing)."""
+    if not RULES_DIR.exists():
+        return []
+    return list(RULES_DIR.rglob("*.yml"))
+
+
+def _load_rule_file(path: Path) -> dict[str, Any] | None:
+    """Parse one rule file; malformed files are skipped (None)."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+    except Exception:
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _find_rule_file_by_id(rule_id: str) -> Path | None:
+    """Locate the file whose parsed ``id`` equals ``rule_id``."""
+    for yml_file in _iter_rule_files():
+        data = _load_rule_file(yml_file)
+        if data is not None and data.get("id") == rule_id:
+            return yml_file
+    return None
 
 
 class Rule(BaseModel):
@@ -48,23 +77,19 @@ async def list_rules() -> dict[str, Any]:
     """List all Sigma rules."""
     rules = []
 
-    if not RULES_DIR.exists():
-        return {"total": 0, "rules": []}
-
-    for yml_file in RULES_DIR.rglob("*.yml"):
-        try:
-            with open(yml_file, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
-                rules.append(
-                    RuleSummary(
-                        id=data.get("id", "unknown"),
-                        title=data.get("title", "Untitled"),
-                        level=data.get("level", "medium"),
-                        file_path=str(yml_file.relative_to(RULES_DIR)),
-                    )
-                )
-        except Exception as e:
-            print(f"Failed to load rule {yml_file}: {e}")
+    for yml_file in _iter_rule_files():
+        data = _load_rule_file(yml_file)
+        if data is None:
+            print(f"Failed to load rule {yml_file}")
+            continue
+        rules.append(
+            RuleSummary(
+                id=data.get("id", "unknown"),
+                title=data.get("title", "Untitled"),
+                level=data.get("level", "medium"),
+                file_path=str(yml_file.relative_to(RULES_DIR)),
+            )
+        )
 
     return {"total": len(rules), "rules": rules}
 
@@ -75,19 +100,16 @@ async def get_rule(rule_id: str) -> Rule:
     if not RULES_DIR.exists():
         raise HTTPException(status_code=404, detail="Rules directory not found")
 
-    for yml_file in RULES_DIR.rglob("*.yml"):
-        try:
-            with open(yml_file, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
-                if data.get("id") == rule_id:
-                    return Rule(**data)
-        except Exception:
-            continue
-
-    raise HTTPException(status_code=404, detail=f"Rule {rule_id} not found")
+    rule_file = _find_rule_file_by_id(rule_id)
+    if rule_file is None:
+        raise HTTPException(status_code=404, detail=f"Rule {rule_id} not found")
+    data = _load_rule_file(rule_file)
+    if data is None:
+        raise HTTPException(status_code=404, detail=f"Rule {rule_id} not found")
+    return Rule(**data)
 
 
-@router.post("/rules")
+@router.post("/rules", dependencies=[Depends(require_permission("rule_create"))])
 async def create_rule(rule: Rule) -> dict[str, str]:
     """Create a new Sigma rule."""
     if not RULES_DIR.exists():
@@ -124,21 +146,10 @@ async def create_rule(rule: Rule) -> dict[str, str]:
     return {"status": "created", "file_path": str(file_path.relative_to(RULES_DIR))}
 
 
-@router.put("/rules/{rule_id}")
+@router.put("/rules/{rule_id}", dependencies=[Depends(require_permission("rule_update"))])
 async def update_rule(rule_id: str, rule: Rule) -> dict[str, str]:
     """Update an existing rule."""
-    # Find existing rule file
-    existing_file = None
-    for yml_file in RULES_DIR.rglob("*.yml"):
-        try:
-            with open(yml_file, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
-                if data.get("id") == rule_id:
-                    existing_file = yml_file
-                    break
-        except Exception:
-            continue
-
+    existing_file = _find_rule_file_by_id(rule_id)
     if not existing_file:
         raise HTTPException(status_code=404, detail=f"Rule {rule_id} not found")
 
@@ -149,21 +160,10 @@ async def update_rule(rule_id: str, rule: Rule) -> dict[str, str]:
     return {"status": "updated", "file_path": str(existing_file.relative_to(RULES_DIR))}
 
 
-@router.delete("/rules/{rule_id}")
+@router.delete("/rules/{rule_id}", dependencies=[Depends(require_permission("rule_delete"))])
 async def delete_rule(rule_id: str) -> dict[str, str]:
     """Delete a rule."""
-    # Find existing rule file
-    existing_file = None
-    for yml_file in RULES_DIR.rglob("*.yml"):
-        try:
-            with open(yml_file, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
-                if data.get("id") == rule_id:
-                    existing_file = yml_file
-                    break
-        except Exception:
-            continue
-
+    existing_file = _find_rule_file_by_id(rule_id)
     if not existing_file:
         raise HTTPException(status_code=404, detail=f"Rule {rule_id} not found")
 
@@ -173,7 +173,7 @@ async def delete_rule(rule_id: str) -> dict[str, str]:
     return {"status": "deleted", "rule_id": rule_id}
 
 
-@router.post("/rules/reload")
+@router.post("/rules/reload", dependencies=[Depends(require_permission("rule_reload"))])
 async def reload_rules() -> dict[str, Any]:
     """Reload all rules (trigger engine reload)."""
     # In a real implementation, this would trigger the Rust engine to reload rules

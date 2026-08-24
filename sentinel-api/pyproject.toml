@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "sentinel-api"
+version = "1.2.0"
+description = "FastAPI gateway for the Sentinel AI-native SOC platform"
+authors = ["Sentinel Team"]
+license = "MIT"
+readme = "../README.md"
+packages = [{ include = "app" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.141"
+starlette = "^1.6"
+uvicorn = { version = "^0.52", extras = ["standard"] }
+gunicorn = "^23.0"
+pydantic = "^2.13"
+sqlalchemy = { version = "^2.0", extras = ["asyncio"] }
+alembic = "^1.19"
+asyncpg = "^0.30"
+aiosqlite = "^0.20"
+python-jose = { version = "^3.5", extras = ["cryptography"] }
+python-multipart = "^0.0.32"
+redis = "^5.0"
+websockets = "^15.0"
+prometheus-fastapi-instrumentator = "^8.1"
+prometheus-client = "^0.24"
+pyyaml = "^6.0.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4"
+pytest-asyncio = "^0.21"
+httpx = "^0.28"
+black = "^23.12"
+ruff = "^0.1.8"
+mypy = "^1.7"
+
+[tool.mypy]
+explicit_package_bases = true
+ignore_missing_imports = true
+disable_error_code = ["import-untyped"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

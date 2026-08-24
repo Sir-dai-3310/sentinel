@@ -5,7 +5,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.auth.jwt import User, require_auth
 from app.rbac import require_permission
@@ -14,7 +14,11 @@ from sentinel_agents.graph import analyze_log
 from sentinel_agents.state import IncidentState
 from sentinel_agents.utils.masking import mask
 
-router = APIRouter(dependencies=[Depends(require_auth)])
+# Analysis is analyst/admin-only (the import existed but the dependency was
+# never mounted).
+router = APIRouter(
+    dependencies=[Depends(require_auth), Depends(require_permission("analyze"))]
+)
 
 
 async def _persist_result(
@@ -68,9 +72,12 @@ class LogInput(BaseModel):
 
 
 class BatchLogInput(BaseModel):
-    """Batch log event input."""
+    """Batch log event input (capped to prevent resource-exhaustion DoS)."""
 
-    logs: list[dict[str, Any]]
+    logs: list[dict[str, Any]] = Field(max_length=100)
+
+# Max concurrent analyses per batch request; each may invoke the LLM graph.
+BATCH_CONCURRENCY = 10
 
 
 class AnalysisResult(BaseModel):
@@ -82,6 +89,8 @@ class AnalysisResult(BaseModel):
     agent_trace: list[str]
     metadata: dict[str, Any]
     skipped_llm: bool
+    analysis_status: str = "completed"
+    analysis_error: str | None = None
 
 
 class BatchAnalysisResult(BaseModel):
@@ -120,6 +129,8 @@ async def analyze_log_endpoint(
             agent_trace=result.agent_trace,
             metadata=result.metadata,
             skipped_llm=result.skipped_llm,
+            analysis_status=result.analysis_status,
+            analysis_error=result.analysis_error,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
@@ -134,18 +145,24 @@ async def analyze_batch(input: BatchLogInput) -> BatchAnalysisResult:
     """
     start_time = asyncio.get_event_loop().time()
 
+    # Process logs in bounded parallelism (unbounded gather could fan out
+    # thousands of LLM-invoking coroutines from a single request).
+    semaphore = asyncio.Semaphore(BATCH_CONCURRENCY)
+
     async def analyze_one(log: dict[str, Any]) -> dict[str, Any]:
         try:
-            result = await analyze_log(log)
+            async with semaphore:
+                result = await analyze_log(log)
             return {
                 "verdict": result.verdict.model_dump() if result.verdict else None,
                 "rule_hits": [hit.model_dump() for hit in result.rule_hits],
-                "success": True,
+                "success": result.analysis_status != "failed",
+                "analysis_status": result.analysis_status,
+                "analysis_error": result.analysis_error,
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    # Process all logs in parallel
     results = await asyncio.gather(
         *[analyze_one(log) for log in input.logs],
         return_exceptions=False,

@@ -120,7 +120,7 @@ async def delete_subject_data(
                 AnalysisResult.tenant_id == tenant_id,
             )
         )
-        deleted = result.rowcount or 0
+        deleted = int(getattr(result, "rowcount", 0) or 0)
         await _write_audit(
             session, "privacy_delete", admin.username, subject, tenant_id,
             {"rows_deleted": deleted},
