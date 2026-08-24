@@ -16,7 +16,7 @@ gunicorn = "^23.0"
 pydantic = "^2.13"
 sqlalchemy = { version = "^2.0", extras = ["asyncio"] }
 alembic = "^1.19"
-asyncpg = "^0.30"
+asyncpg = "^0.31"
 aiosqlite = "^0.20"
 python-jose = { version = "^3.5", extras = ["cryptography"] }
 python-multipart = "^0.0.32"
