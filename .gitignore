@@ -77,3 +77,11 @@ site/
 
 # OS
 Thumbs.db
+
+# Test & coverage runtime artifacts (never committed)
+coverage/
+test-results/
+playwright-report/
+
+# Local upgrade/planning notes (kept on disk, never committed)
+UPGRADE/
