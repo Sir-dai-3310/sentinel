@@ -7,7 +7,10 @@ fn main() {
     let mut fields = HashMap::new();
     fields.insert("EventID".to_string(), "1".to_string());
     fields.insert("Image".to_string(), "powershell.exe".to_string());
-    fields.insert("CommandLine".to_string(), "powershell -enc test".to_string());
+    fields.insert(
+        "CommandLine".to_string(),
+        "powershell -enc test".to_string(),
+    );
 
     let log = LogEvent {
         event_id: Some(1),
@@ -15,8 +18,7 @@ fn main() {
         fields,
     };
 
-    let engine = SigmaEngine::new("../rules".to_string())
-        .expect("Failed to load rules");
+    let engine = SigmaEngine::new("../rules".to_string()).expect("Failed to load rules");
 
     println!("Loaded {} rules", engine.rule_count());
 
@@ -40,7 +42,10 @@ fn main() {
 
     println!("\n=== Performance Results (10,000 iterations, warmed) ===");
     println!("Total time: {:?}", duration);
-    println!("Average latency: {} ns ({:.3} us, {:.4} ms)", avg_ns, avg_us, avg_ms);
+    println!(
+        "Average latency: {} ns ({:.3} us, {:.4} ms)",
+        avg_ns, avg_us, avg_ms
+    );
     println!("Throughput: {:.0} EPS", eps);
     println!();
     println!("Targets: latency < 10ms, throughput > 10,000 EPS");
@@ -59,15 +64,24 @@ fn main() {
         println!("PASS Throughput: {:.0} EPS > 10,000 EPS", eps);
     } else {
         println!("WARN Throughput: {:.0} EPS (target: >10,000)", eps);
-        println!("     {:.0} EPS x 100 rules = {:.0} rule-evals/sec",
-                 eps, eps * 100.0);
+        println!(
+            "     {:.0} EPS x 100 rules = {:.0} rule-evals/sec",
+            eps,
+            eps * 100.0
+        );
     }
 
     println!();
     println!("=== Rule Engine Stats ===");
     println!("Rules evaluated per log: {}", engine.rule_count());
-    println!("Time per rule: {:.2} us", avg_us / engine.rule_count() as f64);
-    println!("Rule evaluations per second: {:.0}", eps * engine.rule_count() as f64);
+    println!(
+        "Time per rule: {:.2} us",
+        avg_us / engine.rule_count() as f64
+    );
+    println!(
+        "Rule evaluations per second: {:.0}",
+        eps * engine.rule_count() as f64
+    );
 
     // ============ Batch (cross-log parallel) throughput ============
     // Build a batch of distinct logs so rayon can parallelize across them.
@@ -78,8 +92,15 @@ fn main() {
             let mut f = HashMap::new();
             f.insert("EventID".to_string(), (1 + i % 40).to_string());
             f.insert("Image".to_string(), "powershell.exe".to_string());
-            f.insert("CommandLine".to_string(), format!("powershell -enc test {i}").to_string());
-            LogEvent { event_id: Some(1 + i % 40), timestamp: None, fields: f }
+            f.insert(
+                "CommandLine".to_string(),
+                format!("powershell -enc test {i}").to_string(),
+            );
+            LogEvent {
+                event_id: Some(1 + i % 40),
+                timestamp: None,
+                fields: f,
+            }
         })
         .collect();
 

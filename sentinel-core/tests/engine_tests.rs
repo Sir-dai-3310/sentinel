@@ -84,7 +84,10 @@ fn test_office_spawn_shell_detection() {
     let log = create_log(
         Some(1),
         vec![
-            ("ParentImage", "C:\\Program Files\\Microsoft Office\\winword.exe"),
+            (
+                "ParentImage",
+                "C:\\Program Files\\Microsoft Office\\winword.exe",
+            ),
             ("Image", "C:\\Windows\\System32\\cmd.exe"),
         ],
     );
@@ -99,9 +102,10 @@ fn test_office_spawn_shell_detection() {
 fn test_registry_persistence_detection() {
     let log = create_log(
         Some(13),
-        vec![
-            ("TargetObject", "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Malware"),
-        ],
+        vec![(
+            "TargetObject",
+            "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Malware",
+        )],
     );
 
     if let Ok(engine) = SigmaEngine::new("../rules".to_string()) {
@@ -114,9 +118,7 @@ fn test_registry_persistence_detection() {
 fn test_scheduled_task_detection() {
     let log = create_log(
         Some(1),
-        vec![
-            ("CommandLine", "schtasks /create /tn MyTask /tr malware.exe"),
-        ],
+        vec![("CommandLine", "schtasks /create /tn MyTask /tr malware.exe")],
     );
 
     if let Ok(engine) = SigmaEngine::new("../rules".to_string()) {
@@ -129,9 +131,7 @@ fn test_scheduled_task_detection() {
 fn test_smb_lateral_movement_detection() {
     let log = create_log(
         Some(1),
-        vec![
-            ("CommandLine", "net use \\\\192.168.1.100\\admin$"),
-        ],
+        vec![("CommandLine", "net use \\\\192.168.1.100\\admin$")],
     );
 
     if let Ok(engine) = SigmaEngine::new("../rules".to_string()) {
@@ -160,10 +160,7 @@ fn test_benign_log() {
 #[test]
 fn test_pre_filtering_performance() {
     // Test that pre-filtering reduces evaluation time
-    let log = create_log(
-        Some(1),
-        vec![("Image", "test.exe")],
-    );
+    let log = create_log(Some(1), vec![("Image", "test.exe")]);
 
     if let Ok(engine) = SigmaEngine::new("../rules".to_string()) {
         let start = std::time::Instant::now();

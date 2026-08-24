@@ -148,7 +148,10 @@ impl Condition {
                             if of_word == "of" {
                                 tokens.push(Token::AllOf);
                             } else {
-                                return Err(format!("Expected 'of' after 'all', got '{}'", of_word));
+                                return Err(format!(
+                                    "Expected 'of' after 'all', got '{}'",
+                                    of_word
+                                ));
                             }
                         }
                         _ => tokens.push(Token::Identifier(word)),

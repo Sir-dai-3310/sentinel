@@ -68,9 +68,9 @@ impl SigmaEngine {
     /// candidate rules), which amortizes per-log rayon scheduling overhead and
     /// dramatically improves throughput for bulk/streaming ingestion.
     pub fn evaluate_batch(&self, logs: &[LogEvent]) -> Vec<Vec<RuleHit>> {
+        use crate::metrics::global as metrics;
         use rayon::prelude::*;
         use std::sync::atomic::Ordering;
-        use crate::metrics::global as metrics;
 
         let start = std::time::Instant::now();
 
@@ -85,9 +85,12 @@ impl SigmaEngine {
         let elapsed_us = start.elapsed().as_micros() as u64;
         let m = metrics();
         m.batches_total.fetch_add(1, Ordering::Relaxed);
-        m.batch_events_total.fetch_add(logs.len() as u64, Ordering::Relaxed);
-        m.batch_time_us_total.fetch_add(elapsed_us, Ordering::Relaxed);
-        m.eval_time_us_total.fetch_add(elapsed_us, Ordering::Relaxed);
+        m.batch_events_total
+            .fetch_add(logs.len() as u64, Ordering::Relaxed);
+        m.batch_time_us_total
+            .fetch_add(elapsed_us, Ordering::Relaxed);
+        m.eval_time_us_total
+            .fetch_add(elapsed_us, Ordering::Relaxed);
 
         results
     }
@@ -104,9 +107,108 @@ impl SigmaEngine {
 impl SigmaEngine {
     #[new]
     pub fn py_new(rules_dir: String) -> pyo3::PyResult<Self> {
-        Self::new(rules_dir)
-            .map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))
+        Self::new(rules_dir).map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))
     }
+
+    /// Number of loaded rules (Python-accessible).
+    #[pyo3(name = "rule_count")]
+    pub fn py_rule_count(&self) -> usize {
+        self.rule_count()
+    }
+
+    /// Evaluate a single log (Python dict) against all relevant rules.
+    ///
+    /// Returns a list of hit dicts:
+    /// `{rule_id, rule_name, technique, confidence, severity, reason}`.
+    #[pyo3(name = "evaluate")]
+    pub fn py_evaluate<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+        log: &pyo3::Bound<'py, pyo3::types::PyDict>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyList>> {
+        let event = py_dict_to_log_event(log)?;
+        let hits = self.evaluate(&event);
+        rule_hits_to_pylist(py, &hits)
+    }
+
+    /// Evaluate a batch of logs (list of Python dicts) in parallel.
+    ///
+    /// Returns a list (per input log) of lists of hit dicts.
+    #[pyo3(name = "evaluate_batch")]
+    pub fn py_evaluate_batch<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+        logs: &pyo3::Bound<'py, pyo3::types::PyList>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyList>> {
+        use pyo3::types::PyDictMethods;
+        use pyo3::types::PyListMethods;
+        let mut events = Vec::with_capacity(logs.len());
+        for item in logs.iter() {
+            let d = item.downcast_into::<pyo3::types::PyDict>()?;
+            events.push(py_dict_to_log_event(&d)?);
+        }
+        let batch = self.evaluate_batch(&events);
+        let out = pyo3::types::PyList::empty_bound(py);
+        for hits in &batch {
+            out.append(rule_hits_to_pylist(py, hits)?)?;
+        }
+        Ok(out)
+    }
+}
+
+/// Convert a Python dict into a normalized `LogEvent`.
+///
+/// `EventID` (case-insensitive) is parsed into the typed `event_id` field;
+/// `timestamp` is preserved; every other key becomes a string field.
+#[cfg(feature = "pyo3")]
+fn py_dict_to_log_event(dict: &pyo3::Bound<'_, pyo3::types::PyDict>) -> pyo3::PyResult<LogEvent> {
+    use pyo3::types::PyAnyMethods;
+    use pyo3::types::PyDictMethods;
+    let mut event = LogEvent::new();
+    for (k, v) in dict.iter() {
+        let key: String = k.extract()?;
+        let val: String = match v.extract::<String>() {
+            Ok(s) => s,
+            Err(_) => v.str()?.to_string(),
+        };
+        if key.eq_ignore_ascii_case("EventID") {
+            event.event_id = val.parse::<u32>().ok();
+        } else if key.eq_ignore_ascii_case("timestamp") {
+            event.timestamp = Some(val);
+        } else {
+            event.set(key, val);
+        }
+    }
+    Ok(event)
+}
+
+/// Convert `RuleHit`s into a Python list of dicts.
+#[cfg(feature = "pyo3")]
+fn rule_hits_to_pylist<'py>(
+    py: pyo3::Python<'py>,
+    hits: &[RuleHit],
+) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyList>> {
+    use crate::types::Severity;
+    use pyo3::types::PyDictMethods;
+    use pyo3::types::PyListMethods;
+    let list = pyo3::types::PyList::empty_bound(py);
+    for hit in hits {
+        let d = pyo3::types::PyDict::new_bound(py);
+        d.set_item("rule_id", &hit.rule_id)?;
+        d.set_item("rule_name", &hit.rule_name)?;
+        d.set_item("technique", &hit.technique)?;
+        d.set_item("confidence", hit.confidence)?;
+        let severity = match hit.severity {
+            Severity::Low => "low",
+            Severity::Medium => "medium",
+            Severity::High => "high",
+            Severity::Critical => "critical",
+        };
+        d.set_item("severity", severity)?;
+        d.set_item("reason", &hit.reason)?;
+        list.append(d)?;
+    }
+    Ok(list)
 }
 
 impl SigmaEngine {
@@ -181,7 +283,12 @@ impl SigmaEngine {
             }
         }
 
-        (product_index, service_index, category_index, always_evaluate)
+        (
+            product_index,
+            service_index,
+            category_index,
+            always_evaluate,
+        )
     }
 
     /// Get candidate rule indices based on log characteristics
@@ -217,8 +324,8 @@ impl SigmaEngine {
 
     /// Evaluate candidate rules in parallel
     fn evaluate_candidates_parallel(&self, log: &LogEvent, indices: &[usize]) -> Vec<RuleHit> {
-        use rayon::prelude::*;
         use crate::metrics::global as metrics;
+        use rayon::prelude::*;
 
         let start = std::time::Instant::now();
 
@@ -235,10 +342,13 @@ impl SigmaEngine {
         // Record metrics once per log event (not per rule)
         let elapsed_us = start.elapsed().as_micros() as u64;
         let m = metrics();
-        m.evaluations_total.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        m.eval_time_us_total.fetch_add(elapsed_us, std::sync::atomic::Ordering::Relaxed);
+        m.evaluations_total
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        m.eval_time_us_total
+            .fetch_add(elapsed_us, std::sync::atomic::Ordering::Relaxed);
         if !hits.is_empty() {
-            m.hits_total.fetch_add(hits.len() as u64, std::sync::atomic::Ordering::Relaxed);
+            m.hits_total
+                .fetch_add(hits.len() as u64, std::sync::atomic::Ordering::Relaxed);
         }
 
         hits
@@ -279,7 +389,11 @@ mod tests {
                 "CommandLine".to_string(),
                 format!("powershell -enc test {i}"),
             );
-            LogEvent { event_id: Some(1), timestamp: None, fields: f }
+            LogEvent {
+                event_id: Some(1),
+                timestamp: None,
+                fields: f,
+            }
         };
 
         let logs: Vec<LogEvent> = (0..16).map(make_log).collect();
@@ -299,6 +413,11 @@ mod tests {
         assert!(total_hits > 0);
 
         // Batch metrics were recorded
-        assert!(crate::metrics::global().batches_total.load(Ordering::Relaxed) >= 1);
+        assert!(
+            crate::metrics::global()
+                .batches_total
+                .load(Ordering::Relaxed)
+                >= 1
+        );
     }
 }

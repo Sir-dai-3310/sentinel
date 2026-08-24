@@ -47,8 +47,8 @@ impl LogEvent {
 pub struct RuleHit {
     pub rule_id: String,
     pub rule_name: String,
-    pub technique: String,  // MITRE ATT&CK technique (e.g., T1003.001)
-    pub confidence: u8,     // 0-100
+    pub technique: String, // MITRE ATT&CK technique (e.g., T1003.001)
+    pub confidence: u8,    // 0-100
     pub severity: Severity,
     pub reason: String,
 }

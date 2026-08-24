@@ -1,8 +1,7 @@
 use sentinel_core::sigma::SigmaEngine;
 
 fn main() {
-    let engine = SigmaEngine::new("../rules".to_string())
-        .expect("Failed to load rules");
+    let engine = SigmaEngine::new("../rules".to_string()).expect("Failed to load rules");
 
     let count = engine.rule_count();
     println!("✅ Successfully loaded {} rules", count);

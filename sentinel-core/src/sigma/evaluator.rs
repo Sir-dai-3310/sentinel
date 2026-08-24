@@ -61,7 +61,10 @@ impl<'a> PreparedLog<'a> {
             return Some(std::borrow::Cow::Borrowed(cached.as_str()));
         }
         // If not in cache, field is already all-lowercase
-        self.event.fields.get(key).map(|s| std::borrow::Cow::Borrowed(s.as_str()))
+        self.event
+            .fields
+            .get(key)
+            .map(|s| std::borrow::Cow::Borrowed(s.as_str()))
     }
 }
 
@@ -148,7 +151,8 @@ impl Evaluator {
         });
 
         // Cache for future use
-        self.rule_fields_cache.insert(cache_key.clone(), required_fields);
+        self.rule_fields_cache
+            .insert(cache_key.clone(), required_fields);
 
         all_present
     }
@@ -203,14 +207,12 @@ impl Evaluator {
         prepared: &mut PreparedLog,
     ) -> Result<bool> {
         match condition {
-            Condition::And(left, right) => {
-                Ok(self.evaluate_condition(left, selections, log, prepared)?
-                    && self.evaluate_condition(right, selections, log, prepared)?)
-            }
-            Condition::Or(left, right) => {
-                Ok(self.evaluate_condition(left, selections, log, prepared)?
-                    || self.evaluate_condition(right, selections, log, prepared)?)
-            }
+            Condition::And(left, right) => Ok(self
+                .evaluate_condition(left, selections, log, prepared)?
+                && self.evaluate_condition(right, selections, log, prepared)?),
+            Condition::Or(left, right) => Ok(self
+                .evaluate_condition(left, selections, log, prepared)?
+                || self.evaluate_condition(right, selections, log, prepared)?),
             Condition::Not(inner) => {
                 Ok(!self.evaluate_condition(inner, selections, log, prepared)?)
             }
@@ -318,9 +320,7 @@ impl Evaluator {
         };
 
         match matcher {
-            FieldValue::Exact(expected) => {
-                Ok(self.match_value(&log_value, expected, modifier))
-            }
+            FieldValue::Exact(expected) => Ok(self.match_value(&log_value, expected, modifier)),
             FieldValue::List(values) => {
                 for expected in values {
                     if self.match_value(&log_value, expected, modifier) {
@@ -371,9 +371,7 @@ impl Evaluator {
                 let regex = self
                     .regex_cache
                     .entry(expected.to_string())
-                    .or_insert_with(|| {
-                        Regex::new(expected).unwrap()
-                    });
+                    .or_insert_with(|| Regex::new(expected).unwrap());
                 regex.is_match(value.as_ref())
             }
             _ => value.as_ref() == expected,
@@ -386,9 +384,7 @@ fn matcher_value(matcher: &FieldValue) -> &str {
     match matcher {
         FieldValue::Exact(v) => v,
         FieldValue::List(values) => values.first().map(|s| s.as_str()).unwrap_or(""),
-        FieldValue::WithModifier(map) => {
-            map.values().next().map(|s| s.as_str()).unwrap_or("")
-        }
+        FieldValue::WithModifier(map) => map.values().next().map(|s| s.as_str()).unwrap_or(""),
     }
 }
 

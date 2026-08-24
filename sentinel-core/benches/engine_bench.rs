@@ -24,8 +24,7 @@ fn create_test_log() -> LogEvent {
 fn benchmark_evaluation(c: &mut Criterion) {
     // Note: This benchmark requires rules to be present in ../rules/
     // If rules are missing, it will benchmark with 0 rules
-    let engine = SigmaEngine::new("../rules".to_string())
-        .expect("Failed to load rules");
+    let engine = SigmaEngine::new("../rules".to_string()).expect("Failed to load rules");
 
     let log = create_test_log();
 

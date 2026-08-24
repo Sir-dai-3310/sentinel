@@ -65,10 +65,7 @@ pub fn parse(input: &str) -> Result<LogEvent> {
     let event_id = event.system.event_id.value;
 
     // Extract timestamp
-    let timestamp = event
-        .system
-        .time_created
-        .and_then(|tc| tc.system_time);
+    let timestamp = event.system.time_created.and_then(|tc| tc.system_time);
 
     // Extract event data fields
     let mut fields = HashMap::new();
@@ -130,10 +127,7 @@ mod tests {
             event.get("CommandLine"),
             Some("powershell.exe -enc JABjAD0AJw".to_string())
         );
-        assert_eq!(
-            event.get("Computer"),
-            Some("WORKSTATION01".to_string())
-        );
+        assert_eq!(event.get("Computer"), Some("WORKSTATION01".to_string()));
     }
 
     #[test]

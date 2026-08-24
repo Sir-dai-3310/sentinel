@@ -5,8 +5,7 @@ use anyhow::{Context, Result};
 use std::collections::HashMap;
 
 pub fn parse(input: &str) -> Result<LogEvent> {
-    let value: serde_json::Value =
-        serde_json::from_str(input).context("Failed to parse JSON")?;
+    let value: serde_json::Value = serde_json::from_str(input).context("Failed to parse JSON")?;
 
     let mut fields = HashMap::new();
     let mut event_id = None;

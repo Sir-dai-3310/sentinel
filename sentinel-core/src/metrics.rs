@@ -58,7 +58,8 @@ impl Metrics {
     /// Record a rule evaluation
     pub fn record_evaluation(&self, elapsed_us: u64, hit: bool) {
         self.evaluations_total.fetch_add(1, Ordering::Relaxed);
-        self.eval_time_us_total.fetch_add(elapsed_us, Ordering::Relaxed);
+        self.eval_time_us_total
+            .fetch_add(elapsed_us, Ordering::Relaxed);
         if hit {
             self.hits_total.fetch_add(1, Ordering::Relaxed);
         }
@@ -89,19 +90,31 @@ impl Metrics {
 
         out.push_str("# HELP sentinel_evaluations_total Total rule evaluations performed\n");
         out.push_str("# TYPE sentinel_evaluations_total counter\n");
-        out.push_str(&format!("sentinel_evaluations_total {}\n", self.evaluations_total.load(Ordering::Relaxed)));
+        out.push_str(&format!(
+            "sentinel_evaluations_total {}\n",
+            self.evaluations_total.load(Ordering::Relaxed)
+        ));
 
         out.push_str("# HELP sentinel_hits_total Total rule hits\n");
         out.push_str("# TYPE sentinel_hits_total counter\n");
-        out.push_str(&format!("sentinel_hits_total {}\n", self.hits_total.load(Ordering::Relaxed)));
+        out.push_str(&format!(
+            "sentinel_hits_total {}\n",
+            self.hits_total.load(Ordering::Relaxed)
+        ));
 
         out.push_str("# HELP sentinel_eval_time_us_total Total evaluation time in microseconds\n");
         out.push_str("# TYPE sentinel_eval_time_us_total counter\n");
-        out.push_str(&format!("sentinel_eval_time_us_total {}\n", self.eval_time_us_total.load(Ordering::Relaxed)));
+        out.push_str(&format!(
+            "sentinel_eval_time_us_total {}\n",
+            self.eval_time_us_total.load(Ordering::Relaxed)
+        ));
 
         out.push_str("# HELP sentinel_avg_latency_us Average evaluation latency in microseconds\n");
         out.push_str("# TYPE sentinel_avg_latency_us gauge\n");
-        out.push_str(&format!("sentinel_avg_latency_us {:.2}\n", self.avg_latency_us()));
+        out.push_str(&format!(
+            "sentinel_avg_latency_us {:.2}\n",
+            self.avg_latency_us()
+        ));
 
         out.push_str("# HELP sentinel_current_eps Current events per second\n");
         out.push_str("# TYPE sentinel_current_eps gauge\n");
@@ -109,31 +122,73 @@ impl Metrics {
 
         out.push_str("# HELP sentinel_rules_loaded Number of rules currently loaded\n");
         out.push_str("# TYPE sentinel_rules_loaded gauge\n");
-        out.push_str(&format!("sentinel_rules_loaded {}\n", self.rules_loaded.load(Ordering::Relaxed)));
+        out.push_str(&format!(
+            "sentinel_rules_loaded {}\n",
+            self.rules_loaded.load(Ordering::Relaxed)
+        ));
 
         out.push_str("# HELP sentinel_condition_cache_hits_total Condition cache hits\n");
         out.push_str("# TYPE sentinel_condition_cache_hits_total counter\n");
-        out.push_str(&format!("sentinel_condition_cache_hits_total {}\n", self.condition_cache_hits.load(Ordering::Relaxed)));
+        out.push_str(&format!(
+            "sentinel_condition_cache_hits_total {}\n",
+            self.condition_cache_hits.load(Ordering::Relaxed)
+        ));
 
         out.push_str("# HELP sentinel_condition_cache_misses_total Condition cache misses\n");
         out.push_str("# TYPE sentinel_condition_cache_misses_total counter\n");
-        out.push_str(&format!("sentinel_condition_cache_misses_total {}\n", self.condition_cache_misses.load(Ordering::Relaxed)));
+        out.push_str(&format!(
+            "sentinel_condition_cache_misses_total {}\n",
+            self.condition_cache_misses.load(Ordering::Relaxed)
+        ));
 
         out.push_str("# HELP sentinel_regex_cache_hits_total Regex cache hits\n");
         out.push_str("# TYPE sentinel_regex_cache_hits_total counter\n");
-        out.push_str(&format!("sentinel_regex_cache_hits_total {}\n", self.regex_cache_hits.load(Ordering::Relaxed)));
+        out.push_str(&format!(
+            "sentinel_regex_cache_hits_total {}\n",
+            self.regex_cache_hits.load(Ordering::Relaxed)
+        ));
 
         out.push_str("# HELP sentinel_regex_cache_misses_total Regex cache misses\n");
         out.push_str("# TYPE sentinel_regex_cache_misses_total counter\n");
-        out.push_str(&format!("sentinel_regex_cache_misses_total {}\n", self.regex_cache_misses.load(Ordering::Relaxed)));
+        out.push_str(&format!(
+            "sentinel_regex_cache_misses_total {}\n",
+            self.regex_cache_misses.load(Ordering::Relaxed)
+        ));
 
         out.push_str("# HELP sentinel_field_presence_skips_total Field presence fast-path skips\n");
         out.push_str("# TYPE sentinel_field_presence_skips_total counter\n");
-        out.push_str(&format!("sentinel_field_presence_skips_total {}\n", self.field_presence_skips.load(Ordering::Relaxed)));
+        out.push_str(&format!(
+            "sentinel_field_presence_skips_total {}\n",
+            self.field_presence_skips.load(Ordering::Relaxed)
+        ));
 
         out.push_str("# HELP sentinel_event_id_skips_total EventID fast-path skips\n");
         out.push_str("# TYPE sentinel_event_id_skips_total counter\n");
-        out.push_str(&format!("sentinel_event_id_skips_total {}\n", self.event_id_skips.load(Ordering::Relaxed)));
+        out.push_str(&format!(
+            "sentinel_event_id_skips_total {}\n",
+            self.event_id_skips.load(Ordering::Relaxed)
+        ));
+
+        out.push_str("# HELP sentinel_batches_total Total batch evaluations performed\n");
+        out.push_str("# TYPE sentinel_batches_total counter\n");
+        out.push_str(&format!(
+            "sentinel_batches_total {}\n",
+            self.batches_total.load(Ordering::Relaxed)
+        ));
+
+        out.push_str("# HELP sentinel_batch_events_total Total events processed in batches\n");
+        out.push_str("# TYPE sentinel_batch_events_total counter\n");
+        out.push_str(&format!(
+            "sentinel_batch_events_total {}\n",
+            self.batch_events_total.load(Ordering::Relaxed)
+        ));
+
+        out.push_str("# HELP sentinel_batch_time_us_total Total batch evaluation time in microseconds\n");
+        out.push_str("# TYPE sentinel_batch_time_us_total counter\n");
+        out.push_str(&format!(
+            "sentinel_batch_time_us_total {}\n",
+            self.batch_time_us_total.load(Ordering::Relaxed)
+        ));
 
         out
     }
