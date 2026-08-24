@@ -44,6 +44,7 @@ async def test_triage_agent_high_confidence_skip_llm(mock_llm_client):
 
     # Should skip LLM
     assert result.skipped_llm is True
+    assert result.analysis_status == "skipped"
     assert result.verdict is not None
     assert result.verdict.malicious is True
 
@@ -85,9 +86,9 @@ async def test_analyst_agent_graceful_degradation(mock_llm_client):
     result = await agent(state)
 
     # Should have verdict even if LLM fails
-    assert result.verdict is not None
-    # Should indicate manual review needed
-    assert "manual review" in result.verdict.reason.lower() or "failed" in result.verdict.reason.lower()
+    assert result.verdict is None
+    assert result.analysis_status == "failed"
+    assert result.analysis_error == "LLM analysis unavailable; manual review required."
 
 
 @pytest.mark.asyncio
@@ -106,6 +107,8 @@ async def test_analyst_agent_with_llm_success(mock_llm_client):
     assert result.verdict.malicious is True
     assert result.verdict.danger_level == 85
     assert "Mocked analysis" in result.verdict.reason
+    assert result.analysis_status == "completed"
+    assert result.analysis_error is None
 
 
 def test_verdict_validation():

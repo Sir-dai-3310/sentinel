@@ -98,6 +98,7 @@ async def analyze_log(log: dict) -> IncidentState:
         return IncidentState(
             log=log,
             skipped_llm=True,
+            analysis_status="skipped",
             verdict=Verdict(
                 malicious=False,
                 danger_level=0,

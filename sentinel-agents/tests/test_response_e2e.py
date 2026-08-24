@@ -11,6 +11,7 @@ import asyncio
 import json
 import os
 import stat
+import sys
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -176,6 +177,7 @@ class TestSlackE2E:
 
 class TestScriptE2E:
     @pytest.mark.asyncio
+    @pytest.mark.skipif(sys.platform == "win32", reason="requires a bash interpreter")
     async def test_script_executes_with_sentinel_env(self, tmp_path, malicious_state, monkeypatch):
         """Real script execution: verify env vars are passed and exit code honored."""
         script = tmp_path / "capture_env.sh"
@@ -199,6 +201,7 @@ class TestScriptE2E:
         assert "Encoded PowerShell attack detected" in content
 
     @pytest.mark.asyncio
+    @pytest.mark.skipif(sys.platform == "win32", reason="requires a bash interpreter")
     async def test_script_nonzero_exit_returns_false(self, tmp_path, malicious_state, monkeypatch):
         script = tmp_path / "fail.sh"
         script.write_text("#!/bin/bash\nexit 1\n")

@@ -58,13 +58,27 @@ class TriageAgent(BaseAgent):
     async def __call__(self, state: IncidentState) -> IncidentState:
         self.record_trace(state, "TriageAgent")
 
-        # Run Sigma rules
+        # Run Sigma rules: prefer the high-performance Rust engine (evaluates
+        # the full rules/ directory in parallel); fall back to the built-in
+        # Python matcher if the compiled engine is unavailable or errors.
         engine = self._get_engine()
-        if engine:
-            # Use Rust engine
-            # hits = engine.evaluate(state.log)
-            # For now, placeholder until Rust-Python integration is complete
-            state.rule_hits = self._python_rule_fallback(state.log)
+        if engine is not None:
+            try:
+                raw_hits = engine.evaluate(state.log)
+                state.rule_hits = [
+                    RuleHit(
+                        rule_id=h["rule_id"],
+                        rule_name=h["rule_name"],
+                        technique=h["technique"],
+                        confidence=int(h["confidence"]),
+                        severity=h["severity"],
+                        reason=h["reason"],
+                    )
+                    for h in raw_hits
+                ]
+            except Exception as exc:  # pragma: no cover - defensive
+                print(f"Warning: Rust engine.evaluate failed ({exc}), using Python fallback")
+                state.rule_hits = self._python_rule_fallback(state.log)
         else:
             # Python fallback
             state.rule_hits = self._python_rule_fallback(state.log)
@@ -84,6 +98,8 @@ class TriageAgent(BaseAgent):
                 ],
             )
             state.skipped_llm = True
+            state.analysis_status = "skipped"
+            state.analysis_error = None
 
         return state
 
@@ -177,16 +193,13 @@ class AnalystAgent(BaseAgent):
             prompt = build_analysis_prompt(state.log, context)
             verdict = await self.llm.ainvoke_structured(prompt, Verdict)
             state.verdict = verdict
+            state.analysis_status = "completed"
+            state.analysis_error = None
 
-        except Exception as e:
-            # Graceful degradation on LLM failure
-            state.verdict = Verdict(
-                malicious=False,
-                danger_level=0,
-                reason=f"LLM analysis failed: {str(e)}. Manual review required.",
-                mitre_techniques=[],
-                recommended_actions=["Manual analysis required due to LLM failure"],
-            )
+        except Exception:
+            state.verdict = None
+            state.analysis_status = "failed"
+            state.analysis_error = "LLM analysis unavailable; manual review required."
 
         return state
 

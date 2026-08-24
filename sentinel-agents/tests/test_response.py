@@ -1,5 +1,7 @@
 """Tests for SOAR response module."""
 
+import sys
+
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -155,6 +157,7 @@ class TestScriptAction:
         assert result is False  # Script file doesn't exist
 
     @pytest.mark.asyncio
+    @pytest.mark.skipif(sys.platform == "win32", reason="requires a bash interpreter")
     async def test_execute_success(self, sample_state):
         """Test successful script execution."""
         import tempfile

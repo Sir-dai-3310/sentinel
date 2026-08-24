@@ -19,7 +19,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
-import yaml
+from ..utils.yamlutil import load_mapping
 
 TASKS = ("triage", "analyst", "hunter", "reporter")
 
@@ -49,12 +49,7 @@ class LLMConfig:
         Malformed YAML -> ValueError.
         """
         path = path or os.getenv("SENTINEL_LLM_CONFIG", _DEFAULT_PATH)
-        if not os.path.exists(path):
-            return cls()
-        with open(path, "r", encoding="utf-8") as f:
-            cfg = yaml.safe_load(f) or {}
-        if not isinstance(cfg, dict):
-            raise ValueError("llm config must be a mapping")
+        cfg = load_mapping(path, "llm config")
         tasks = cfg.get("tasks", {})
         if not isinstance(tasks, dict):
             raise ValueError("llm config 'tasks' must be a mapping")

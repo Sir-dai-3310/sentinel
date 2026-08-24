@@ -21,30 +21,10 @@ import hashlib
 import os
 from typing import Any
 
-import yaml
+from .dotpath import get_path, set_path
+from .yamlutil import load_mapping
 
 REDACTED = "***"
-
-
-def _get_path(obj: dict[str, Any], dotted: str) -> Any:
-    cur: Any = obj
-    for part in dotted.split("."):
-        if not isinstance(cur, dict) or part not in cur:
-            return None
-        cur = cur[part]
-    return cur
-
-
-def _set_path(obj: dict[str, Any], dotted: str, value: Any) -> None:
-    parts = dotted.split(".")
-    cur = obj
-    for part in parts[:-1]:
-        nxt = cur.get(part)
-        if not isinstance(nxt, dict):
-            return  # parent path missing -> nothing to mask
-        cur = nxt
-    if parts[-1] in cur:
-        cur[parts[-1]] = value
 
 
 def _mask_value(value: Any, strategy: str) -> Any:
@@ -95,9 +75,9 @@ class Masker:
             strategy = rule.get("strategy", "redact")
             if not path:
                 continue
-            current = _get_path(out, path)
+            current = get_path(out, path)
             if current is not None:
-                _set_path(out, path, _mask_value(current, strategy))
+                set_path(out, path, _mask_value(current, strategy))
         return out
 
     @classmethod
@@ -115,10 +95,7 @@ class Masker:
         ``enabled`` arg overrides the file; the ``MASKING_ENABLED`` env var
         overrides both when set.
         """
-        with open(path, "r", encoding="utf-8") as f:
-            cfg = yaml.safe_load(f) or {}
-        if not isinstance(cfg, dict):
-            raise ValueError("masking config must be a mapping")
+        cfg = load_mapping(path, "masking config")
         rules = cfg.get("rules", [])
         if not isinstance(rules, list):
             raise ValueError("masking 'rules' must be a list")

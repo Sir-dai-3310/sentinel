@@ -150,11 +150,21 @@ class TestReportGenerator:
         finally:
             os.unlink(path)
 
-    def test_generate_bytes(self, sample_state):
+    def test_generate_bytes(self, sample_state, monkeypatch):
         """Test PDF generation as bytes."""
         gen = ReportGenerator()
+        temp_paths = []
+        original_mkstemp = tempfile.mkstemp
+
+        def mkstemp(*args, **kwargs):
+            fd, path = original_mkstemp(*args, **kwargs)
+            temp_paths.append(path)
+            return fd, path
+
+        monkeypatch.setattr(tempfile, "mkstemp", mkstemp)
         content = gen.generate_bytes(sample_state)
         assert isinstance(content, bytes)
         assert len(content) > 0
-        # PDF files start with %PDF
         assert content[:4] == b"%PDF"
+        assert temp_paths
+        assert not os.path.exists(temp_paths[0])

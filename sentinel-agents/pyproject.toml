@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sentinel-agents"
-version = "1.0.0"
+version = "1.2.0"
 description = "AI-powered security analysis agents for Sentinel"
 authors = ["Sentinel Team"]
 license = "MIT"
@@ -8,14 +8,17 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-langgraph = "^0.0.20"
-langchain = "^0.1.0"
-langchain-openai = "^0.0.2"
-openai = "^1.6.0"
-pydantic = "^2.5.0"
-httpx = "^0.25.2"
-tenacity = "^8.2.3"
-python-dotenv = "^1.0.0"
+langgraph = "^1.2"
+langchain = "^1.3"
+langchain-openai = "^1.5"
+openai = "^3.1"
+pydantic = "^2.13"
+httpx = "^0.28"
+tenacity = "^9.1"
+python-dotenv = "^1.0"
+pyyaml = "^6.0.2"
+reportlab = "^5.0"
+aiokafka = "^0.14"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

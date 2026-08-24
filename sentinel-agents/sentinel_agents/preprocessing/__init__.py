@@ -23,33 +23,17 @@ from __future__ import annotations
 import os
 from typing import Any, Callable
 
-import yaml
+from ..utils.dotpath import get_path as _get_path
+from ..utils.dotpath import set_path as _shared_set_path
+from ..utils.yamlutil import load_mapping
 
 # A log that survives preprocessing unchanged; filters may return None to drop.
 DropType = None
 
 
-def _get_path(log: dict[str, Any], dotted: str) -> Any:
-    """Fetch a value by dotted path (``a.b.c``); missing -> None."""
-    cur: Any = log
-    for part in dotted.split("."):
-        if not isinstance(cur, dict) or part not in cur:
-            return None
-        cur = cur[part]
-    return cur
-
-
 def _set_path(log: dict[str, Any], dotted: str, value: Any) -> None:
     """Set a value by dotted path, creating intermediate dicts."""
-    parts = dotted.split(".")
-    cur = log
-    for part in parts[:-1]:
-        nxt = cur.get(part)
-        if not isinstance(nxt, dict):
-            nxt = {}
-            cur[part] = nxt
-        cur = nxt
-    cur[parts[-1]] = value
+    _shared_set_path(log, dotted, value, create_missing=True)
 
 
 class FieldMapper:
@@ -177,10 +161,7 @@ class Pipeline:
         """
         if not os.path.exists(path):
             raise FileNotFoundError(f"preprocessing config not found: {path}")
-        with open(path, "r", encoding="utf-8") as f:
-            cfg = yaml.safe_load(f) or {}
-        if not isinstance(cfg, dict):
-            raise ValueError("preprocessing config must be a mapping")
+        cfg = load_mapping(path, "preprocessing config")
 
         stages: list[Any] = []
 

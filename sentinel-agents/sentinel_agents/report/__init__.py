@@ -1,6 +1,5 @@
 """PDF report generation for Sentinel."""
 
-import io
 import os
 from datetime import UTC, datetime
 from typing import Any
@@ -202,15 +201,13 @@ class ReportGenerator:
         Returns:
             PDF file content as bytes
         """
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
-
-        # Reuse the same story building logic
-        # For simplicity, create a temporary file and read it back
         import tempfile
-        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-            self.generate(state, tmp.name)
-            with open(tmp.name, "rb") as f:
-                content = f.read()
-            os.unlink(tmp.name)
-            return content
+
+        fd, output_path = tempfile.mkstemp(suffix=".pdf")
+        os.close(fd)
+        try:
+            self.generate(state, output_path)
+            with open(output_path, "rb") as f:
+                return f.read()
+        finally:
+            os.unlink(output_path)

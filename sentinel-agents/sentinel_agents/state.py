@@ -1,8 +1,8 @@
 """State definitions for LangGraph."""
 
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class RuleHit(BaseModel):
@@ -52,6 +52,8 @@ class IncidentState(BaseModel):
 
     # LLM analysis
     llm_reasoning: str = ""
+    analysis_status: Literal["completed", "failed", "skipped"] = "completed"
+    analysis_error: str | None = None
 
     # Final output
     verdict: Verdict | None = None
@@ -62,5 +64,4 @@ class IncidentState(BaseModel):
     # Metadata
     metadata: dict[str, Any] = Field(default_factory=dict)
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)

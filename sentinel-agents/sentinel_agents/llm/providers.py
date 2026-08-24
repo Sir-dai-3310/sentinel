@@ -10,7 +10,12 @@ T = TypeVar("T", bound=BaseModel)
 
 
 class LLMProvider(ABC):
-    """Base class for LLM providers."""
+    """Base class for LLM providers.
+
+    Subclasses only configure ``self.model`` (a LangChain chat model exposing
+    ``ainvoke`` and ``with_structured_output``); the shared ``chat`` /
+    ``chat_structured`` implementations live here.
+    """
 
     @property
     @abstractmethod
@@ -18,17 +23,22 @@ class LLMProvider(ABC):
         """Provider name."""
         pass
 
-    @abstractmethod
+    @property
+    def model(self) -> Any:
+        """The underlying LangChain chat model."""
+        raise NotImplementedError
+
     async def chat(self, prompt: str, **kwargs: Any) -> str:
         """Send a chat completion request."""
-        pass
+        response = await self.model.ainvoke(prompt, **kwargs)
+        return response.content
 
-    @abstractmethod
     async def chat_structured(
         self, prompt: str, output_schema: type[T], **kwargs: Any
     ) -> T:
         """Send a chat completion with structured output."""
-        pass
+        structured = self.model.with_structured_output(output_schema)
+        return await structured.ainvoke(prompt, **kwargs)
 
     def is_available(self) -> bool:
         """Check if the provider is available (API key configured)."""
@@ -41,7 +51,7 @@ class OpenAIProvider(LLMProvider):
     def __init__(self):
         from langchain_openai import ChatOpenAI
 
-        self.model = ChatOpenAI(
+        self._model = ChatOpenAI(
             model=os.getenv("LLM_MODEL", "gpt-4-turbo-preview"),
             temperature=float(os.getenv("LLM_TEMPERATURE", "0.2")),
             api_key=os.getenv("LLM_API_KEY"),
@@ -53,18 +63,12 @@ class OpenAIProvider(LLMProvider):
     def name(self) -> str:
         return "openai"
 
+    @property
+    def model(self) -> Any:
+        return self._model
+
     def is_available(self) -> bool:
         return bool(os.getenv("LLM_API_KEY"))
-
-    async def chat(self, prompt: str, **kwargs: Any) -> str:
-        response = await self.model.ainvoke(prompt, **kwargs)
-        return response.content
-
-    async def chat_structured(
-        self, prompt: str, output_schema: type[T], **kwargs: Any
-    ) -> T:
-        structured = self.model.with_structured_output(output_schema)
-        return await structured.ainvoke(prompt, **kwargs)
 
 
 class AnthropicProvider(LLMProvider):
@@ -73,7 +77,7 @@ class AnthropicProvider(LLMProvider):
     def __init__(self):
         from langchain_anthropic import ChatAnthropic
 
-        self.model = ChatAnthropic(
+        self._model = ChatAnthropic(
             model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
             temperature=float(os.getenv("LLM_TEMPERATURE", "0.2")),
             api_key=os.getenv("ANTHROPIC_API_KEY"),
@@ -84,18 +88,12 @@ class AnthropicProvider(LLMProvider):
     def name(self) -> str:
         return "anthropic"
 
+    @property
+    def model(self) -> Any:
+        return self._model
+
     def is_available(self) -> bool:
         return bool(os.getenv("ANTHROPIC_API_KEY"))
-
-    async def chat(self, prompt: str, **kwargs: Any) -> str:
-        response = await self.model.ainvoke(prompt, **kwargs)
-        return response.content
-
-    async def chat_structured(
-        self, prompt: str, output_schema: type[T], **kwargs: Any
-    ) -> T:
-        structured = self.model.with_structured_output(output_schema)
-        return await structured.ainvoke(prompt, **kwargs)
 
 
 class OllamaProvider(LLMProvider):
@@ -104,7 +102,7 @@ class OllamaProvider(LLMProvider):
     def __init__(self):
         from langchain_community.chat_models import ChatOllama
 
-        self.model = ChatOllama(
+        self._model = ChatOllama(
             model=os.getenv("OLLAMA_MODEL", "llama3"),
             base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
             temperature=float(os.getenv("LLM_TEMPERATURE", "0.2")),
@@ -114,19 +112,13 @@ class OllamaProvider(LLMProvider):
     def name(self) -> str:
         return "ollama"
 
+    @property
+    def model(self) -> Any:
+        return self._model
+
     def is_available(self) -> bool:
         # Ollama doesn't need API key, just needs the service running
         return True
-
-    async def chat(self, prompt: str, **kwargs: Any) -> str:
-        response = await self.model.ainvoke(prompt, **kwargs)
-        return response.content
-
-    async def chat_structured(
-        self, prompt: str, output_schema: type[T], **kwargs: Any
-    ) -> T:
-        structured = self.model.with_structured_output(output_schema)
-        return await structured.ainvoke(prompt, **kwargs)
 
 
 class LLMProviderFactory:
